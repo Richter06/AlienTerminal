@@ -1,0 +1,869 @@
+
+/* =========================================================
+   ALIEN TERMINAL
+   RAW CRT / OLD COMPUTER TERMINAL
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: #000;
+
+  color: #8fbd96;
+
+  font-family:
+    "Courier New",
+    Courier,
+    monospace;
+}
+
+/* =========================================================
+   ENVIRONMENT
+========================================================= */
+
+.app {
+  min-height: 100vh;
+
+  padding: 20px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: #000;
+}
+
+/* =========================================================
+   THE TERMINAL ITSELF
+========================================================= */
+
+.game-window {
+  width: min(1100px, 100%);
+  min-height: 700px;
+
+  position: relative;
+
+  overflow: hidden;
+
+  background: #020402;
+
+  border: 1px solid #1d2b20;
+
+  color: #8fbd96;
+
+  box-shadow:
+    0 0 20px rgba(80, 160, 90, 0.05),
+    inset 0 0 80px rgba(0, 0, 0, 0.9);
+
+  text-shadow:
+    0 0 4px rgba(110, 190, 120, 0.35);
+}
+
+/* =========================================================
+   CRT VIGNETTE
+========================================================= */
+
+.game-window::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  z-index: 50;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 55%,
+      rgba(0, 0, 0, 0.25) 80%,
+      rgba(0, 0, 0, 0.75) 100%
+    );
+}
+
+/* =========================================================
+   CRT SCANLINES
+========================================================= */
+
+.game-window::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  z-index: 51;
+
+  pointer-events: none;
+
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(140, 190, 145, 0.025) 0px,
+      rgba(140, 190, 145, 0.025) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+
+  opacity: 0.7;
+}
+
+/* =========================================================
+   HEADER
+   MAKE IT LOOK LIKE TERMINAL TEXT
+========================================================= */
+
+.game-header {
+  height: auto;
+
+  padding: 18px 20px 8px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #8fbd96;
+
+  font-size: 13px;
+
+  letter-spacing: 1px;
+}
+
+.game-header::after {
+  content: "";
+
+  position: absolute;
+
+  left: 20px;
+  right: 20px;
+
+  top: 48px;
+
+  border-bottom: 1px solid #172319;
+}
+
+.system-light {
+  display: inline-block;
+
+  width: 7px;
+  height: 7px;
+
+  margin-right: 8px;
+
+  background: #7da884;
+
+  border-radius: 0;
+
+  box-shadow:
+    0 0 4px rgba(110, 180, 120, 0.5);
+}
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status-bar {
+  display: flex;
+
+  justify-content: flex-start;
+
+  gap: 35px;
+
+  padding: 18px 20px 12px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #7fa888;
+
+  font-size: 12px;
+
+  letter-spacing: 0;
+
+  line-height: 1.5;
+}
+
+.status-bar div {
+  display: flex;
+
+  gap: 8px;
+}
+
+.label {
+  color: #4e7055;
+
+  opacity: 1;
+}
+
+/* =========================================================
+   GAME CONTENT
+========================================================= */
+
+.game-content {
+  display: block;
+
+  min-height: 580px;
+
+  position: relative;
+}
+
+/* =========================================================
+   REMOVE "PANEL" VISUAL LANGUAGE
+========================================================= */
+
+.map-panel,
+.terminal-panel {
+  padding: 15px 20px 25px;
+
+  border: 0;
+
+  background: transparent;
+}
+
+.panel-title {
+  display: none;
+}
+
+/* =========================================================
+   TERMINAL
+========================================================= */
+
+.terminal-panel {
+  min-height: 500px;
+}
+
+/* =========================================================
+   TERMINAL OUTPUT
+   THIS IS THE ACTUAL SCREEN
+========================================================= */
+
+.terminal-output {
+  height: 420px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 5px 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #8fbd96;
+
+  font-family:
+    "Courier New",
+    Courier,
+    monospace;
+
+  font-size: 14px;
+
+  line-height: 1.7;
+
+  text-shadow:
+    0 0 4px rgba(110, 190, 120, 0.4);
+
+  box-shadow: none;
+
+  border-radius: 0;
+
+  scrollbar-width: thin;
+
+  scrollbar-color:
+    #29432e
+    transparent;
+}
+
+.terminal-output div {
+  position: relative;
+
+  z-index: 1;
+
+  white-space: pre-wrap;
+
+  overflow-wrap: anywhere;
+}
+
+/* =========================================================
+   TERMINAL OUTPUT SCANLINES
+========================================================= */
+
+.terminal-output::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(130, 190, 140, 0.018) 4px
+    );
+}
+
+/* =========================================================
+   TERMINAL INPUT
+========================================================= */
+
+.terminal-input {
+  display: flex;
+
+  gap: 8px;
+
+  margin-top: 8px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  box-shadow: none;
+
+  color: #8fbd96;
+}
+
+.terminal-input span {
+  color: #8fbd96;
+
+  text-shadow:
+    0 0 4px rgba(110, 190, 120, 0.4);
+}
+
+.terminal-input input {
+  flex: 1;
+
+  min-width: 0;
+
+  padding: 0;
+
+  border: 0;
+
+  outline: 0;
+
+  background: transparent;
+
+  color: #8fbd96;
+
+  font-family:
+    "Courier New",
+    Courier,
+    monospace;
+
+  font-size: 14px;
+
+  line-height: 1.7;
+
+  caret-color: #9acba1;
+
+  text-shadow:
+    0 0 4px rgba(110, 190, 120, 0.4);
+}
+
+.terminal-input input::selection {
+  background: #426148;
+
+  color: #d2ead5;
+}
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.terminal-output::-webkit-scrollbar {
+  width: 5px;
+}
+
+.terminal-output::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.terminal-output::-webkit-scrollbar-thumb {
+  background: #29432e;
+
+  border: 0;
+}
+
+.terminal-output::-webkit-scrollbar-thumb:hover {
+  background: #426148;
+}
+
+/* =========================================================
+   MAP
+   RAW TERMINAL DISPLAY
+========================================================= */
+
+.ship-map {
+  height: 560px;
+
+  position: relative;
+
+  overflow: hidden;
+
+  border: 0;
+
+  background: transparent;
+
+  box-shadow: none;
+}
+
+.ship-map::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(130, 190, 140, 0.015) 4px
+    );
+}
+
+/* =========================================================
+   MAP ROOMS
+========================================================= */
+
+.room {
+  width: 120px;
+  height: 55px;
+
+  position: absolute;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  border: 1px solid #36513b;
+
+  background: #020402;
+
+  color: #709678;
+
+  z-index: 2;
+
+  box-shadow: none;
+
+  border-radius: 0;
+
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.room::before {
+  display: none;
+}
+
+.room-name {
+  font-size: 11px;
+
+  letter-spacing: 1px;
+}
+
+/* =========================================================
+   MAP POSITIONS
+========================================================= */
+
+.room-bridge {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.room-cryo {
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.room-hub {
+  top: 220px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.room-medbay {
+  top: 220px;
+  left: 5%;
+}
+
+.room-mess {
+  top: 220px;
+  left: 25%;
+}
+
+.room-galley {
+  top: 320px;
+  left: 25%;
+}
+
+.room-cargo {
+  top: 220px;
+  right: 25%;
+}
+
+.room-airlock {
+  top: 320px;
+  right: 5%;
+}
+
+.room-engineering {
+  top: 320px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.room-machine-shop {
+  top: 420px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.room-landing-bay {
+  top: 520px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* =========================================================
+   MAP CONNECTIONS
+========================================================= */
+
+.map-connection {
+  position: absolute;
+
+  height: 1px;
+
+  background: #36513b;
+
+  box-shadow: none;
+
+  transform-origin: left center;
+
+  z-index: 1;
+
+  opacity: 0.8;
+}
+
+.map-connection::after {
+  display: none;
+}
+
+/* =========================================================
+   PLAYER LOCATION
+========================================================= */
+
+.player-room {
+  border: 1px solid #8fbd96;
+
+  color: #a4cda9;
+
+  box-shadow:
+    0 0 5px rgba(100, 170, 110, 0.12);
+
+  text-shadow:
+    0 0 5px rgba(120, 200, 130, 0.5);
+}
+
+/* =========================================================
+   RADAR CONTACT
+========================================================= */
+
+.alien-marker {
+  position: absolute;
+
+  top: 4px;
+  right: 7px;
+
+  color: #9bcba2;
+
+  font-size: 13px;
+
+  animation: radarPulse 1.2s infinite;
+
+  text-shadow:
+    0 0 5px rgba(130, 200, 140, 0.6);
+}
+
+@keyframes radarPulse {
+  0% {
+    opacity: 0.25;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.25;
+  }
+}
+
+/* =========================================================
+   MAP LEGEND
+========================================================= */
+
+.map-legend {
+  display: flex;
+
+  gap: 25px;
+
+  margin-top: 15px;
+
+  color: #55745c;
+
+  font-size: 10px;
+
+  opacity: 1;
+}
+
+.map-legend span {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+.map-legend i {
+  width: 7px;
+  height: 7px;
+
+  display: inline-block;
+}
+
+.legend-player {
+  border: 1px solid #8fbd96;
+}
+
+.legend-alien {
+  background: #8fbd96;
+
+  border-radius: 0;
+
+  box-shadow: none;
+}
+
+/* =========================================================
+   MAP EXIT
+========================================================= */
+
+.map-exit {
+  padding: 0;
+
+  margin-bottom: 15px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #719678;
+
+  font-family: inherit;
+
+  font-size: 11px;
+
+  letter-spacing: 0;
+
+  cursor: pointer;
+
+  text-decoration: none;
+}
+
+.map-exit::before {
+  content: "> ";
+}
+
+.map-exit:hover {
+  color: #a4cda9;
+
+  background: transparent;
+
+  box-shadow: none;
+}
+
+/* =========================================================
+   GAME RESULT
+========================================================= */
+
+.game-result {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  align-items: center;
+
+  background: rgba(0, 3, 0, 0.96);
+
+  color: #8fbd96;
+
+  z-index: 20;
+
+  text-shadow:
+    0 0 5px rgba(110, 190, 120, 0.5);
+}
+
+.game-result h2 {
+  margin-bottom: 30px;
+
+  color: #9acba1;
+
+  font-size: 20px;
+
+  font-weight: normal;
+
+  letter-spacing: 3px;
+}
+
+.game-result button {
+  padding: 5px 10px;
+
+  border: 1px solid #55745c;
+
+  background: transparent;
+
+  color: #8fbd96;
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  border-radius: 0;
+}
+
+.game-result button::before {
+  content: "> ";
+}
+
+.game-result button:hover {
+  border-color: #8fbd96;
+
+  background: transparent;
+
+  color: #b0d7b5;
+
+  box-shadow:
+    0 0 5px rgba(100, 170, 110, 0.15);
+}
+
+/* =========================================================
+   SUBTLE CRT FLICKER
+========================================================= */
+
+@keyframes crtFlicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  48% {
+    opacity: 0.98;
+  }
+
+  49% {
+    opacity: 0.94;
+  }
+
+  50% {
+    opacity: 0.99;
+  }
+
+  51% {
+    opacity: 0.96;
+  }
+}
+
+.game-window {
+  animation: crtFlicker 5s infinite;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 800px) {
+  .app {
+    padding: 10px;
+  }
+
+  .game-window {
+    min-height: 100vh;
+  }
+
+  .game-header {
+    padding-left: 12px;
+    padding-right: 12px;
+
+    font-size: 11px;
+  }
+
+  .status-bar {
+    padding-left: 12px;
+    padding-right: 12px;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+  }
+
+  .map-panel,
+  .terminal-panel {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .ship-map {
+    height: 560px;
+
+    overflow-x: auto;
+  }
+
+  .room-medbay {
+    left: 3%;
+  }
+
+  .room-mess {
+    left: 24%;
+  }
+
+  .room-cargo {
+    right: 24%;
+  }
+
+  .room-airlock {
+    right: 3%;
+  }
+}
+

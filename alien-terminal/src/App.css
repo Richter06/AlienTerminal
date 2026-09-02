@@ -1,8 +1,29 @@
-
 /* =========================================================
    ALIEN TERMINAL
-   RAW CRT / OLD COMPUTER TERMINAL
+   USCSS SYSTEMS — SHIPBOARD TERMINAL EMULATION
+   RAW CRT / OLD INDUSTRIAL COMPUTER, NOT A "RETRO WEBSITE"
 ========================================================= */
+
+:root {
+  --font-mono:
+    Consolas,
+    "Lucida Console",
+    "Courier New",
+    Courier,
+    monospace;
+
+  /* aged phosphor palette — desaturated, not neon */
+  --glow-rgb: 130, 165, 105;
+
+  --bg: #030402;
+  --bg-well: #050702;
+
+  --ink-bright: #c7dba3;   /* primary / important text */
+  --ink: #93ac79;          /* standard operational text */
+  --ink-dim: #5c7050;      /* secondary / label text */
+  --ink-faint: #33422c;    /* structural lines, inactive */
+  --ink-ghost: #1d2618;    /* barely-there structural lines */
+}
 
 * {
   box-sizing: border-box;
@@ -16,34 +37,41 @@ body,
 }
 
 body {
-  background: #000;
+  background: var(--bg);
 
-  color: #8fbd96;
+  color: var(--ink);
 
-  font-family:
-    "Courier New",
-    Courier,
-    monospace;
+  font-family: var(--font-mono);
+
+  -webkit-font-smoothing: none;
+}
+
+::selection {
+  background: var(--ink-faint);
+  color: var(--ink-bright);
 }
 
 /* =========================================================
    ENVIRONMENT
+   The page itself is not "a site with a box in it" — the
+   terminal is meant to fill the space it's given.
 ========================================================= */
 
 .app {
   min-height: 100vh;
 
-  padding: 20px;
+  padding: 16px;
 
   display: flex;
   justify-content: center;
   align-items: center;
 
-  background: #000;
+  background: var(--bg);
 }
 
 /* =========================================================
    THE TERMINAL ITSELF
+   No bezel, no "monitor" chrome — this IS the screen.
 ========================================================= */
 
 .game-window {
@@ -54,18 +82,24 @@ body {
 
   overflow: hidden;
 
-  background: #020402;
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      var(--bg-well) 0%,
+      var(--bg) 65%
+    );
 
-  border: 1px solid #1d2b20;
+  border: 1px solid var(--ink-ghost);
 
-  color: #8fbd96;
+  color: var(--ink);
 
   box-shadow:
-    0 0 20px rgba(80, 160, 90, 0.05),
-    inset 0 0 80px rgba(0, 0, 0, 0.9);
+    inset 0 0 120px rgba(0, 0, 0, 0.92),
+    inset 0 0 2px rgba(var(--glow-rgb), 0.25);
 
-  text-shadow:
-    0 0 4px rgba(110, 190, 120, 0.35);
+  text-shadow: 0 0 3px rgba(var(--glow-rgb), 0.3);
+
+  animation: crtFlicker 6s infinite steps(1, end);
 }
 
 /* =========================================================
@@ -85,9 +119,9 @@ body {
   background:
     radial-gradient(
       ellipse at center,
-      transparent 55%,
-      rgba(0, 0, 0, 0.25) 80%,
-      rgba(0, 0, 0, 0.75) 100%
+      transparent 50%,
+      rgba(0, 0, 0, 0.3) 82%,
+      rgba(0, 0, 0, 0.82) 100%
     );
 }
 
@@ -108,24 +142,65 @@ body {
   background:
     repeating-linear-gradient(
       to bottom,
-      rgba(140, 190, 145, 0.025) 0px,
-      rgba(140, 190, 145, 0.025) 1px,
+      rgba(0, 0, 0, 0.18) 0px,
+      rgba(0, 0, 0, 0.18) 1px,
       transparent 1px,
-      transparent 4px
+      transparent 3px
     );
 
-  opacity: 0.7;
+  mix-blend-mode: multiply;
+
+  opacity: 0.55;
+
+  animation: scanlineDrift 9s infinite ease-in-out;
+}
+
+@keyframes scanlineDrift {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.62;
+  }
+}
+
+@keyframes crtFlicker {
+  0%,
+  93%,
+  100% {
+    opacity: 1;
+  }
+
+  94% {
+    opacity: 0.96;
+  }
+
+  95% {
+    opacity: 1;
+  }
+
+  96% {
+    opacity: 0.94;
+  }
+
+  97% {
+    opacity: 1;
+  }
 }
 
 /* =========================================================
    HEADER
-   MAKE IT LOOK LIKE TERMINAL TEXT
+   A single line of system text, not a "navbar".
 ========================================================= */
 
 .game-header {
   height: auto;
 
-  padding: 18px 20px 8px;
+  position: relative;
+
+  padding: 14px 20px 10px;
 
   display: flex;
   justify-content: space-between;
@@ -135,11 +210,15 @@ body {
 
   background: transparent;
 
-  color: #8fbd96;
+  color: var(--ink-dim);
 
-  font-size: 13px;
+  font-size: 12px;
 
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+}
+
+.game-header div:first-child {
+  color: var(--ink-bright);
 }
 
 .game-header::after {
@@ -150,61 +229,99 @@ body {
   left: 20px;
   right: 20px;
 
-  top: 48px;
+  bottom: 0;
 
-  border-bottom: 1px solid #172319;
+  border-bottom: 1px solid var(--ink-faint);
 }
 
 .system-light {
   display: inline-block;
 
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 
-  margin-right: 8px;
+  margin-right: 9px;
 
-  background: #7da884;
+  background: var(--ink-bright);
 
   border-radius: 0;
 
-  box-shadow:
-    0 0 4px rgba(110, 180, 120, 0.5);
+  box-shadow: 0 0 4px rgba(var(--glow-rgb), 0.7);
+
+  animation: statusBlink 2.4s infinite steps(1, end);
+}
+
+@keyframes statusBlink {
+  0%,
+  85%,
+  100% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 0.35;
+  }
 }
 
 /* =========================================================
-   STATUS
+   STATUS BAR
+   Data presented as plain operational readout, not a
+   dashboard widget.
 ========================================================= */
 
 .status-bar {
+  position: relative;
+
   display: flex;
 
   justify-content: flex-start;
 
-  gap: 35px;
+  gap: 28px;
 
-  padding: 18px 20px 12px;
+  padding: 14px 20px;
 
   border: 0;
 
   background: transparent;
 
-  color: #7fa888;
+  color: var(--ink);
 
-  font-size: 12px;
+  font-size: 11px;
 
-  letter-spacing: 0;
+  letter-spacing: 1px;
 
   line-height: 1.5;
+}
+
+.status-bar::after {
+  content: "";
+
+  position: absolute;
+
+  left: 20px;
+  right: 20px;
+
+  bottom: 0;
+
+  border-bottom: 1px dashed var(--ink-ghost);
 }
 
 .status-bar div {
   display: flex;
 
-  gap: 8px;
+  gap: 7px;
+}
+
+.status-bar div:not(:first-child)::before {
+  content: "\2502";
+
+  margin-right: 21px;
+
+  color: var(--ink-ghost);
 }
 
 .label {
-  color: #4e7055;
+  color: var(--ink-dim);
 
   opacity: 1;
 }
@@ -222,20 +339,42 @@ body {
 }
 
 /* =========================================================
-   REMOVE "PANEL" VISUAL LANGUAGE
+   PANEL SURFACE
+   No card language: flat, no border, no elevation.
 ========================================================= */
 
 .map-panel,
 .terminal-panel {
-  padding: 15px 20px 25px;
+  padding: 0 20px 22px;
 
   border: 0;
 
   background: transparent;
 }
 
+/* =========================================================
+   PANEL TITLE
+   Rendered as an inverted system header strip — the way an
+   old character-mode display highlights a status line.
+========================================================= */
+
 .panel-title {
-  display: none;
+  display: block;
+
+  margin: 12px 20px 14px;
+
+  padding: 3px 10px;
+
+  background: var(--ink);
+
+  color: #01100a;
+
+  font-size: 11px;
+  font-weight: bold;
+
+  letter-spacing: 3px;
+
+  text-shadow: none;
 }
 
 /* =========================================================
@@ -248,34 +387,34 @@ body {
 
 /* =========================================================
    TERMINAL OUTPUT
-   THIS IS THE ACTUAL SCREEN
+   THIS IS THE ACTUAL SCREEN CONTENT — printed system text.
 ========================================================= */
 
 .terminal-output {
-  height: 420px;
+  height: 400px;
 
   overflow-y: auto;
   overflow-x: hidden;
 
-  padding: 5px 0;
+  position: relative;
+
+  padding: 6px 0;
 
   border: 0;
 
   background: transparent;
 
-  color: #8fbd96;
+  color: var(--ink);
 
-  font-family:
-    "Courier New",
-    Courier,
-    monospace;
+  font-family: var(--font-mono);
 
-  font-size: 14px;
+  font-size: 13px;
 
-  line-height: 1.7;
+  line-height: 1.75;
 
-  text-shadow:
-    0 0 4px rgba(110, 190, 120, 0.4);
+  letter-spacing: 0.5px;
+
+  text-shadow: 0 0 3px rgba(var(--glow-rgb), 0.35);
 
   box-shadow: none;
 
@@ -283,9 +422,7 @@ body {
 
   scrollbar-width: thin;
 
-  scrollbar-color:
-    #29432e
-    transparent;
+  scrollbar-color: var(--ink-faint) transparent;
 }
 
 .terminal-output div {
@@ -294,30 +431,7 @@ body {
   z-index: 1;
 
   white-space: pre-wrap;
-
   overflow-wrap: anywhere;
-}
-
-/* =========================================================
-   TERMINAL OUTPUT SCANLINES
-========================================================= */
-
-.terminal-output::before {
-  content: "";
-
-  position: absolute;
-
-  inset: 0;
-
-  pointer-events: none;
-
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 3px,
-      rgba(130, 190, 140, 0.018) 4px
-    );
 }
 
 /* =========================================================
@@ -327,26 +441,27 @@ body {
 .terminal-input {
   display: flex;
 
+  align-items: baseline;
+
   gap: 8px;
 
-  margin-top: 8px;
-
-  padding: 0;
+  margin-top: 6px;
+  padding-top: 8px;
 
   border: 0;
+  border-top: 1px solid var(--ink-ghost);
 
   background: transparent;
 
   box-shadow: none;
 
-  color: #8fbd96;
+  color: var(--ink-bright);
 }
 
 .terminal-input span {
-  color: #8fbd96;
+  color: var(--ink-bright);
 
-  text-shadow:
-    0 0 4px rgba(110, 190, 120, 0.4);
+  text-shadow: 0 0 4px rgba(var(--glow-rgb), 0.5);
 }
 
 .terminal-input input {
@@ -362,27 +477,25 @@ body {
 
   background: transparent;
 
-  color: #8fbd96;
+  color: var(--ink-bright);
 
-  font-family:
-    "Courier New",
-    Courier,
-    monospace;
+  font-family: var(--font-mono);
 
-  font-size: 14px;
+  font-size: 13px;
 
-  line-height: 1.7;
+  letter-spacing: 0.5px;
 
-  caret-color: #9acba1;
+  line-height: 1.75;
 
-  text-shadow:
-    0 0 4px rgba(110, 190, 120, 0.4);
+  caret-color: var(--ink-bright);
+
+  text-shadow: 0 0 4px rgba(var(--glow-rgb), 0.5);
 }
 
 .terminal-input input::selection {
-  background: #426148;
+  background: var(--ink-faint);
 
-  color: #d2ead5;
+  color: var(--ink-bright);
 }
 
 /* =========================================================
@@ -390,7 +503,7 @@ body {
 ========================================================= */
 
 .terminal-output::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 .terminal-output::-webkit-scrollbar-track {
@@ -398,22 +511,23 @@ body {
 }
 
 .terminal-output::-webkit-scrollbar-thumb {
-  background: #29432e;
+  background: var(--ink-faint);
 
   border: 0;
 }
 
 .terminal-output::-webkit-scrollbar-thumb:hover {
-  background: #426148;
+  background: var(--ink-dim);
 }
 
 /* =========================================================
    MAP
-   RAW TERMINAL DISPLAY
+   A schematic readout drawn with characters and rules,
+   not a floating diagram.
 ========================================================= */
 
 .ship-map {
-  height: 560px;
+  height: 540px;
 
   position: relative;
 
@@ -440,17 +554,17 @@ body {
       to bottom,
       transparent 0px,
       transparent 3px,
-      rgba(130, 190, 140, 0.015) 4px
+      rgba(var(--glow-rgb), 0.02) 4px
     );
 }
 
 /* =========================================================
-   MAP ROOMS
+   MAP ROOMS — drawn as bracketed schematic nodes
 ========================================================= */
 
 .room {
   width: 120px;
-  height: 55px;
+  height: 52px;
 
   position: absolute;
 
@@ -459,11 +573,11 @@ body {
   justify-content: center;
   align-items: center;
 
-  border: 1px solid #36513b;
+  border: 1px solid var(--ink-faint);
 
-  background: #020402;
+  background: var(--bg);
 
-  color: #709678;
+  color: var(--ink-dim);
 
   z-index: 2;
 
@@ -476,18 +590,26 @@ body {
     border-color 0.2s;
 }
 
-.room::before {
-  display: none;
-}
-
 .room-name {
-  font-size: 11px;
+  font-size: 10px;
 
   letter-spacing: 1px;
 }
 
+.room-name::before {
+  content: "[ ";
+
+  color: var(--ink-ghost);
+}
+
+.room-name::after {
+  content: " ]";
+
+  color: var(--ink-ghost);
+}
+
 /* =========================================================
-   MAP POSITIONS
+   MAP POSITIONS — unchanged geometry
 ========================================================= */
 
 .room-bridge {
@@ -552,7 +674,8 @@ body {
 }
 
 /* =========================================================
-   MAP CONNECTIONS
+   MAP CONNECTIONS (reserved — no markup currently renders
+   these; kept inert and consistent with the room styling)
 ========================================================= */
 
 .map-connection {
@@ -560,7 +683,7 @@ body {
 
   height: 1px;
 
-  background: #36513b;
+  background: var(--ink-faint);
 
   box-shadow: none;
 
@@ -568,11 +691,7 @@ body {
 
   z-index: 1;
 
-  opacity: 0.8;
-}
-
-.map-connection::after {
-  display: none;
+  opacity: 0.7;
 }
 
 /* =========================================================
@@ -580,15 +699,18 @@ body {
 ========================================================= */
 
 .player-room {
-  border: 1px solid #8fbd96;
+  border: 1px solid var(--ink-bright);
 
-  color: #a4cda9;
+  color: var(--ink-bright);
 
-  box-shadow:
-    0 0 5px rgba(100, 170, 110, 0.12);
+  box-shadow: 0 0 6px rgba(var(--glow-rgb), 0.18);
 
-  text-shadow:
-    0 0 5px rgba(120, 200, 130, 0.5);
+  text-shadow: 0 0 5px rgba(var(--glow-rgb), 0.55);
+}
+
+.player-room .room-name::before,
+.player-room .room-name::after {
+  color: var(--ink-dim);
 }
 
 /* =========================================================
@@ -599,21 +721,20 @@ body {
   position: absolute;
 
   top: 4px;
-  right: 7px;
+  right: 8px;
 
-  color: #9bcba2;
+  color: var(--ink-bright);
 
-  font-size: 13px;
+  font-size: 12px;
 
   animation: radarPulse 1.2s infinite;
 
-  text-shadow:
-    0 0 5px rgba(130, 200, 140, 0.6);
+  text-shadow: 0 0 5px rgba(var(--glow-rgb), 0.6);
 }
 
 @keyframes radarPulse {
   0% {
-    opacity: 0.25;
+    opacity: 0.2;
   }
 
   50% {
@@ -621,7 +742,7 @@ body {
   }
 
   100% {
-    opacity: 0.25;
+    opacity: 0.2;
   }
 }
 
@@ -632,13 +753,15 @@ body {
 .map-legend {
   display: flex;
 
-  gap: 25px;
+  gap: 22px;
 
-  margin-top: 15px;
+  margin-top: 12px;
 
-  color: #55745c;
+  color: var(--ink-dim);
 
   font-size: 10px;
+
+  letter-spacing: 1px;
 
   opacity: 1;
 }
@@ -652,18 +775,18 @@ body {
 }
 
 .map-legend i {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 
   display: inline-block;
 }
 
 .legend-player {
-  border: 1px solid #8fbd96;
+  border: 1px solid var(--ink-bright);
 }
 
 .legend-alien {
-  background: #8fbd96;
+  background: var(--ink-bright);
 
   border-radius: 0;
 
@@ -677,19 +800,19 @@ body {
 .map-exit {
   padding: 0;
 
-  margin-bottom: 15px;
+  margin: 12px 20px 14px;
 
   border: 0;
 
   background: transparent;
 
-  color: #719678;
+  color: var(--ink-dim);
 
   font-family: inherit;
 
   font-size: 11px;
 
-  letter-spacing: 0;
+  letter-spacing: 1px;
 
   cursor: pointer;
 
@@ -701,7 +824,7 @@ body {
 }
 
 .map-exit:hover {
-  color: #a4cda9;
+  color: var(--ink-bright);
 
   background: transparent;
 
@@ -710,6 +833,7 @@ body {
 
 /* =========================================================
    GAME RESULT
+   A system message, not a modal.
 ========================================================= */
 
 .game-result {
@@ -722,41 +846,63 @@ body {
   flex-direction: column;
 
   justify-content: center;
-
   align-items: center;
 
-  background: rgba(0, 3, 0, 0.96);
+  background: rgba(1, 2, 1, 0.94);
 
-  color: #8fbd96;
+  color: var(--ink);
 
   z-index: 20;
 
-  text-shadow:
-    0 0 5px rgba(110, 190, 120, 0.5);
+  text-shadow: 0 0 5px rgba(var(--glow-rgb), 0.5);
 }
 
 .game-result h2 {
-  margin-bottom: 30px;
+  margin: 0 0 26px;
 
-  color: #9acba1;
+  color: var(--ink-bright);
 
-  font-size: 20px;
-
+  font-size: 18px;
   font-weight: normal;
 
-  letter-spacing: 3px;
+  letter-spacing: 4px;
+
+  text-align: center;
+}
+
+.game-result h2::before,
+.game-result h2::after {
+  content: "********************************";
+
+  display: block;
+
+  margin: 0 0 16px;
+
+  color: var(--ink-faint);
+
+  font-size: 11px;
+  font-weight: normal;
+
+  letter-spacing: 2px;
+}
+
+.game-result h2::after {
+  margin: 16px 0 0;
 }
 
 .game-result button {
-  padding: 5px 10px;
+  padding: 4px 10px;
 
-  border: 1px solid #55745c;
+  border: 1px solid var(--ink-faint);
 
   background: transparent;
 
-  color: #8fbd96;
+  color: var(--ink);
 
   font-family: inherit;
+  font-size: 12px;
+
+  letter-spacing: 1px;
 
   cursor: pointer;
 
@@ -768,45 +914,13 @@ body {
 }
 
 .game-result button:hover {
-  border-color: #8fbd96;
+  border-color: var(--ink-bright);
 
   background: transparent;
 
-  color: #b0d7b5;
+  color: var(--ink-bright);
 
-  box-shadow:
-    0 0 5px rgba(100, 170, 110, 0.15);
-}
-
-/* =========================================================
-   SUBTLE CRT FLICKER
-========================================================= */
-
-@keyframes crtFlicker {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  48% {
-    opacity: 0.98;
-  }
-
-  49% {
-    opacity: 0.94;
-  }
-
-  50% {
-    opacity: 0.99;
-  }
-
-  51% {
-    opacity: 0.96;
-  }
-}
-
-.game-window {
-  animation: crtFlicker 5s infinite;
+  box-shadow: 0 0 5px rgba(var(--glow-rgb), 0.15);
 }
 
 /* =========================================================
@@ -815,7 +929,7 @@ body {
 
 @media (max-width: 800px) {
   .app {
-    padding: 10px;
+    padding: 8px;
   }
 
   .game-window {
@@ -826,22 +940,48 @@ body {
     padding-left: 12px;
     padding-right: 12px;
 
-    font-size: 11px;
+    font-size: 10px;
+
+    letter-spacing: 1px;
+  }
+
+  .game-header::after {
+    left: 12px;
+    right: 12px;
   }
 
   .status-bar {
     padding-left: 12px;
     padding-right: 12px;
 
-    gap: 15px;
+    gap: 14px;
 
     flex-wrap: wrap;
+  }
+
+  .status-bar::after {
+    left: 12px;
+    right: 12px;
+  }
+
+  .status-bar div:not(:first-child)::before {
+    margin-right: 10px;
+  }
+
+  .panel-title {
+    margin-left: 12px;
+    margin-right: 12px;
   }
 
   .map-panel,
   .terminal-panel {
     padding-left: 12px;
     padding-right: 12px;
+  }
+
+  .map-exit {
+    margin-left: 12px;
+    margin-right: 12px;
   }
 
   .ship-map {
@@ -866,4 +1006,3 @@ body {
     right: 3%;
   }
 }
-

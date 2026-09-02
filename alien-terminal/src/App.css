@@ -498,6 +498,51 @@ body {
   color: var(--ink-bright);
 }
 
+
+
+.terminal-input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.terminal-input-wrapper input {
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  caret-color: transparent;
+}
+
+.terminal-caret {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 8px;
+  height: 16px;
+  background: var(--ink-bright);
+  z-index: 2;
+  pointer-events: none;
+  animation: terminalCaretBlink 1s steps(1, end) infinite;
+}
+
+
+
+@keyframes terminalCaretBlink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+
+
+
+
 /* =========================================================
    SCROLLBAR
 ========================================================= */
@@ -613,62 +658,62 @@ body {
 ========================================================= */
 
 .room-bridge {
-  top: 20px;
+  top: 5px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .room-cryo {
-  top: 100px;
+  top: 85px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .room-hub {
-  top: 220px;
+  top: 205px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .room-medbay {
-  top: 220px;
-  left: 5%;
+  top: 205px;
+  left: 6%;
 }
 
 .room-mess {
-  top: 220px;
+  top: 205px;
   left: 25%;
 }
 
 .room-galley {
-  top: 320px;
+  top: 305px;
   left: 25%;
 }
 
 .room-cargo {
-  top: 220px;
+  top: 205px;
   right: 25%;
 }
 
 .room-airlock {
-  top: 320px;
-  right: 5%;
+  top: 305px;
+  right: 6%;
 }
 
 .room-engineering {
-  top: 320px;
+  top: 305px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .room-machine-shop {
-  top: 420px;
+  top: 405px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .room-landing-bay {
-  top: 520px;
+  top: 485px;
   left: 50%;
   transform: translateX(-50%);
 }

@@ -2,7 +2,7 @@ export const rooms = {
   bridge: {
     id: "bridge",
     name: "BRIDGE",
-    exits: ["cryo", "hub"],
+    exits: ["cryo"],
   },
 
   cryo: {
@@ -14,7 +14,7 @@ export const rooms = {
   mess: {
     id: "mess",
     name: "MESS",
-    exits: ["hub", "galley"],
+    exits: ["hub", "galley", "medbay"],
   },
 
   galley: {
@@ -27,10 +27,8 @@ export const rooms = {
     id: "hub",
     name: "HUB",
     exits: [
-      "bridge",
       "cryo",
       "mess",
-      "medbay",
       "cargo",
       "engineering",
     ],
@@ -39,7 +37,7 @@ export const rooms = {
   medbay: {
     id: "medbay",
     name: "MEDBAY",
-    exits: ["hub"],
+    exits: ["mess"],
   },
 
   cargo: {

@@ -83,6 +83,7 @@ export default function App() {
             <Terminal
               game={game}
               onCommand={handleCommand}
+              onMap={() => setView("map")}
               gameOverDots={gameOverDots}
             />
           ) : (

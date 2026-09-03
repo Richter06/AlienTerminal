@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 export default function Terminal({
   game,
   onCommand,
+   onMap,
   gameOverDots,
 }) {
   const [input, setInput] = useState("");
@@ -72,51 +73,56 @@ export default function Terminal({
     cursorRef.current.style.left = `${width}px`;
   }
 
-  return (
-    <section className="terminal-panel">
-      <div className="panel-title">TERMINAL</div>
+ return (
+  <section className="terminal-panel">
+    <div className="panel-title">TERMINAL</div>
 
-      <div className="terminal-output">
-        {game.logs.map((log, index) => (
-          <div key={index}>{log}</div>
-        ))}
+    <div className="terminal-output">
+      {game.logs.map((log, index) => (
+        <div key={index}>{log}</div>
+      ))}
 
-        {gameOverDots.map((dot, index) => (
-          <div key={`game-over-${index}`}>
-            {dot}
-          </div>
-        ))}
+      {gameOverDots.map((dot, index) => (
+        <div key={`game-over-${index}`}>
+          {dot}
+        </div>
+      ))}
 
-        <div ref={terminalEndRef} />
+      <div ref={terminalEndRef} />
+    </div>
+
+    {!game.gameOver && !game.victory && (
+      <div className="terminal-actions">
+        <button onClick={onMap}>
+          MAP
+        </button>
       </div>
+    )}
 
-      {!game.gameOver && !game.victory && (
-        <form className="terminal-input" onSubmit={handleSubmit}>
-          <span>&gt;</span>
+    {!game.gameOver && !game.victory && (
+      <form className="terminal-input" onSubmit={handleSubmit}>
+        <span>&gt;</span>
 
-          <div className="terminal-input-wrapper">
+        <div className="terminal-input-wrapper">
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={handleChange}
+            onSelect={handleSelect}
+            autoFocus
+            autoComplete="off"
+            spellCheck="false"
+          />
 
-
-
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={handleChange}
-              onSelect={handleSelect}
-              autoFocus
-              autoComplete="off"
-              spellCheck="false"
-            />
-
-            <span
-              ref={cursorRef}
-              className="terminal-caret"
-              aria-hidden="true"
-            />
-          </div>
-        </form>
-      )}
-    </section>
-  );
+          <span
+            ref={cursorRef}
+            className="terminal-caret"
+            aria-hidden="true"
+          />
+        </div>
+      </form>
+    )}
+  </section>
+);
 }
 

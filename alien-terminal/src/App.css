@@ -413,37 +413,20 @@ body {
 
 .terminal-output {
   height: 400px;
-
   overflow-y: auto;
   overflow-x: hidden;
-
   position: relative;
-
   padding: 6px 0;
-
   border: 0;
-
   background: transparent;
-
   color: var(--ink);
-
   font-family: var(--font-mono);
-
   font-size: 13px;
-
   line-height: 1.75;
-
   letter-spacing: 0.5px;
-
   text-shadow: 0 0 3px rgba(var(--glow-rgb), 0.35);
-
   box-shadow: none;
-
   border-radius: 0;
-
-  scrollbar-width: thin;
-
-  scrollbar-color: var(--ink-faint) transparent;
 }
 
 .terminal-output div {
@@ -569,17 +552,19 @@ body {
 ========================================================= */
 
 .terminal-output::-webkit-scrollbar {
-  width: 4px;
+  width: 10px;
 }
 
 .terminal-output::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-well);
+  border-radius: 0;
 }
 
 .terminal-output::-webkit-scrollbar-thumb {
   background: var(--ink-faint);
-
-  border: 0;
+  border-radius: 0 !important;
+  border: none;
+  box-shadow: none;
 }
 
 .terminal-output::-webkit-scrollbar-thumb:hover {
@@ -761,6 +746,29 @@ body {
 }
 
 
+.sound-device {
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 18px;
+    height: 18px;
+
+    object-fit: contain;
+    opacity: 0.85;
+
+    filter:
+        invert(69%)
+        sepia(16%)
+        saturate(500%)
+        hue-rotate(55deg)
+        brightness(85%);
+}
+
+
+
+
 /* =========================================================
    MAP CONNECTIONS (reserved — no markup currently renders
    these; kept inert and consistent with the room styling)
@@ -807,30 +815,41 @@ body {
 
 .alien-marker {
   position: absolute;
-
-  top: 4px;
-  right: 8px;
-
+  top: 50%;
+  left: 50%;
   color: var(--ink-bright);
-
   font-size: 12px;
-
-  animation: radarPulse 1.2s infinite;
-
+  animation: alienMovement 10s infinite ease-in-out;
   text-shadow: 0 0 5px rgba(var(--glow-rgb), 0.6);
 }
 
-@keyframes radarPulse {
+@keyframes alienMovement {
   0% {
-    opacity: 0.2;
+    transform: translate(-50%, -50%);
   }
 
-  50% {
-    opacity: 1;
+  18% {
+    transform: translate(28px, -8px);
+  }
+
+  37% {
+    transform: translate(12px, 10px);
+  }
+
+  54% {
+    transform: translate(-32px, 6px);
+  }
+
+  71% {
+    transform: translate(-18px, -12px);
+  }
+
+  86% {
+    transform: translate(35px, 5px);
   }
 
   100% {
-    opacity: 0.2;
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -881,6 +900,34 @@ body {
   box-shadow: none;
 }
 
+
+.legend-lock {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.legend-lock b {
+    display: block;
+    width: 5px;
+    height: 7px;
+    background: var(--ink);
+}
+
+.legend-sound {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    opacity: 0.85;
+
+    filter:
+        invert(69%)
+        sepia(16%)
+        saturate(500%)
+        hue-rotate(55deg)
+        brightness(85%);
+}
+
 /* =========================================================
    MAP EXIT
 ========================================================= */
@@ -918,6 +965,30 @@ body {
 
   box-shadow: none;
 }
+
+
+.terminal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.terminal-actions button {
+  padding: 8px 16px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink-bright);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.terminal-actions button:hover {
+  background: var(--ink-ghost);
+}
+
+
 
 /* =========================================================
    GAME RESULT

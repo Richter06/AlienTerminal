@@ -82,6 +82,23 @@ export default function Map({ game, onExit }) {
         };
     }, []);
 
+    /*
+     * Centraliza o mapa horizontalmente
+     * quando a tela é aberta.
+     */
+    useEffect(() => {
+        const map = mapRef.current;
+
+        if (!map) return;
+
+        const container = map.parentElement;
+
+        if (!container) return;
+
+        container.scrollLeft =
+            (map.scrollWidth - container.clientWidth) / 2;
+    }, []);
+
     const connections = [];
 
     roomIds.forEach((roomId) => {
@@ -148,12 +165,12 @@ export default function Map({ game, onExit }) {
             startX =
                 centerA.x +
                 (a.width / 2) *
-                direction;
+                    direction;
 
             endX =
                 centerB.x -
                 (b.width / 2) *
-                direction;
+                    direction;
         } else {
             const direction =
                 dy > 0 ? 1 : -1;
@@ -161,12 +178,12 @@ export default function Map({ game, onExit }) {
             startY =
                 centerA.y +
                 (a.height / 2) *
-                direction;
+                    direction;
 
             endY =
                 centerB.y -
                 (b.height / 2) *
-                direction;
+                    direction;
         }
 
         return {
@@ -190,158 +207,163 @@ export default function Map({ game, onExit }) {
                 EXIT MAP
             </button>
 
-            <div
-                className="ship-map"
-                ref={mapRef}
-            >
-                <svg className="map-connections">
-                    {connections.map(
-                        ([roomA, roomB]) => {
-                            const points =
-                                getConnectionPoints(
-                                    roomA,
-                                    roomB
-                                );
+            <div className="map-scroll">
+                <div
+                    className="ship-map"
+                    ref={mapRef}
+                >
+                    <svg className="map-connections">
+                        {connections.map(
+                            ([roomA, roomB]) => {
+                                const points =
+                                    getConnectionPoints(
+                                        roomA,
+                                        roomB
+                                    );
 
-                            if (!points) {
-                                return null;
-                            }
+                                if (!points) {
+                                    return null;
+                                }
 
-                            const lockKey =
-                                getLockKey(
-                                    roomA,
-                                    roomB
-                                );
+                                const lockKey =
+                                    getLockKey(
+                                        roomA,
+                                        roomB
+                                    );
 
-                            const battery =
-                                game.locks[
-                                lockKey
-                                ] ?? 0;
+                                const battery =
+                                    game.locks[
+                                        lockKey
+                                    ] ?? 0;
 
-                            const isLocked =
-                                battery > 0;
+                                const isLocked =
+                                    battery > 0;
 
-                            const centerX =
-                                (points.startX +
-                                    points.endX) /
-                                2;
+                                const centerX =
+                                    (points.startX +
+                                        points.endX) /
+                                    2;
 
-                            const centerY =
-                                (points.startY +
-                                    points.endY) /
-                                2;
+                                const centerY =
+                                    (points.startY +
+                                        points.endY) /
+                                    2;
 
-                            return (
-                                <g
-                                    key={`${roomA}-${roomB}`}
-                                >
-                                    <line
-                                        x1={
-                                            points.startX
-                                        }
-                                        y1={
-                                            points.startY
-                                        }
-                                        x2={
-                                            points.endX
-                                        }
-                                        y2={
-                                            points.endY
-                                        }
-                                        className={
-                                            isLocked
-                                                ? "locked-connection"
-                                                : ""
-                                        }
-                                    />
+                                return (
+                                    <g
+                                        key={`${roomA}-${roomB}`}
+                                    >
+                                        <line
+                                            x1={
+                                                points.startX
+                                            }
+                                            y1={
+                                                points.startY
+                                            }
+                                            x2={
+                                                points.endX
+                                            }
+                                            y2={
+                                                points.endY
+                                            }
+                                            className={
+                                                isLocked
+                                                    ? "locked-connection"
+                                                    : ""
+                                            }
+                                        />
 
-                                    {isLocked && (
-                                        <g
-                                            className="lock-battery"
-                                            transform={`translate(${centerX}, ${centerY})`}
-                                        >
-                                            {[0, 1, 2].map(
-                                                (
-                                                    index
-                                                ) => (
-                                                    <rect
-                                                        key={
-                                                            index
-                                                        }
-                                                        x={
-                                                            -12 +
-                                                            index *
-                                                            10
-                                                        }
-                                                        y="-3"
-                                                        width="7"
-                                                        height="6"
-                                                        className={
-                                                            index <
+                                        {isLocked && (
+                                            <g
+                                                className="lock-battery"
+                                                transform={`translate(${centerX}, ${centerY})`}
+                                            >
+                                                {[0, 1, 2].map(
+                                                    (
+                                                        index
+                                                    ) => (
+                                                        <rect
+                                                            key={
+                                                                index
+                                                            }
+                                                            x={
+                                                                -12 +
+                                                                index *
+                                                                    10
+                                                            }
+                                                            y="-3"
+                                                            width="7"
+                                                            height="6"
+                                                            className={
+                                                                index <
                                                                 battery
-                                                                ? "battery-active"
-                                                                : "battery-empty"
-                                                        }
-                                                    />
-                                                )
-                                            )}
-                                        </g>
-                                    )}
-                                </g>
+                                                                    ? "battery-active"
+                                                                    : "battery-empty"
+                                                            }
+                                                        />
+                                                    )
+                                                )}
+                                            </g>
+                                        )}
+                                    </g>
+                                );
+                            }
+                        )}
+                    </svg>
+
+                    {roomIds.map((roomId) => {
+                        const room =
+                            rooms[roomId];
+
+                        const isPlayer =
+                            game.playerRoom ===
+                            roomId;
+
+                        const isRadarAlien =
+                            game.radarActive &&
+                            game.radarRoom ===
+                                roomId;
+
+                        const hasSoundDevice =
+                            game.soundDevices?.includes(
+                                roomId
                             );
-                        }
-                    )}
-                </svg>
 
-                {roomIds.map((roomId) => {
-                    const room =
-                        rooms[roomId];
-
-                    const isPlayer =
-                        game.playerRoom ===
-                        roomId;
-
-                    const isRadarAlien =
-                        game.radarActive &&
-                        game.radarRoom ===
-                        roomId;
-
-                    const hasSoundDevice =
-                        game.soundDevices?.includes(
-                            roomId
-                        );
-
-                    return (
-                        <div
-                            key={roomId}
-                            className={`room room-${roomId} ${isPlayer
-                                    ? "player-room"
-                                    : ""
+                        return (
+                            <div
+                                key={roomId}
+                                className={`room room-${roomId} ${
+                                    isPlayer
+                                        ? "player-room"
+                                        : ""
                                 }`}
-                        >
-                            <span className="room-name">
-                                {room.name}
-                            </span>
-
-                            {hasSoundDevice && (
-                                <img
-                                    src={soundDeviceIcon}
-                                    className="sound-device"
-                                    alt=""
-                                />
-                            )}
-
-                            {isRadarAlien && (
-                                <span
-                                    className="alien-marker"
-                                    title="Motion detected"
-                                >
-                                    ●
+                            >
+                                <span className="room-name">
+                                    {room.name}
                                 </span>
-                            )}
-                        </div>
-                    );
-                })}
+
+                                {hasSoundDevice && (
+                                    <img
+                                        src={
+                                            soundDeviceIcon
+                                        }
+                                        className="sound-device"
+                                        alt=""
+                                    />
+                                )}
+
+                                {isRadarAlien && (
+                                    <span
+                                        className="alien-marker"
+                                        title="Motion detected"
+                                    >
+                                        ●
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
 
             <div className="map-legend">

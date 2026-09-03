@@ -346,10 +346,9 @@ body {
 .map-panel,
 .terminal-panel {
   padding: 0 20px 22px;
-
   border: 0;
-
   background: transparent;
+  min-width: 0;
 }
 
 
@@ -579,15 +578,11 @@ body {
 
 .ship-map {
   height: 540px;
-
+  min-width: 700px;
   position: relative;
-
   overflow: hidden;
-
   border: 0;
-
   background: transparent;
-
   box-shadow: none;
 }
 
@@ -608,6 +603,15 @@ body {
       rgba(var(--glow-rgb), 0.02) 4px
     );
 }
+
+.map-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 
 /* =========================================================
    MAP ROOMS — drawn as bracketed schematic nodes
@@ -1098,9 +1102,7 @@ body {
   .game-header {
     padding-left: 12px;
     padding-right: 12px;
-
     font-size: 10px;
-
     letter-spacing: 1px;
   }
 
@@ -1112,9 +1114,7 @@ body {
   .status-bar {
     padding-left: 12px;
     padding-right: 12px;
-
     gap: 14px;
-
     flex-wrap: wrap;
   }
 
@@ -1136,6 +1136,7 @@ body {
   .terminal-panel {
     padding-left: 12px;
     padding-right: 12px;
+    min-width: 0;
   }
 
   .map-exit {
@@ -1145,23 +1146,25 @@ body {
 
   .ship-map {
     height: 560px;
-
-    overflow-x: auto;
   }
 
+  
   .room-medbay {
-    left: 3%;
+    top: 100px;
+    left: 10%;
   }
 
+  
   .room-mess {
-    left: 24%;
+    left: 10%;
+  }
+
+  .room-galley {
+    left: 10%;
   }
 
   .room-cargo {
-    right: 24%;
+    right: 6%;
   }
 
-  .room-airlock {
-    right: 3%;
-  }
 }

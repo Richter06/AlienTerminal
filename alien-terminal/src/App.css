@@ -739,6 +739,28 @@ body {
   transform: translateX(-50%);
 }
 
+
+
+.locked-connection {
+  stroke: var(--ink);
+  stroke-width: 2;
+  opacity: 1;
+}
+
+.lock-battery rect {
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.battery-active {
+  fill: var(--ink);
+}
+
+.battery-empty {
+  fill: var(--bg);
+}
+
+
 /* =========================================================
    MAP CONNECTIONS (reserved — no markup currently renders
    these; kept inert and consistent with the room styling)

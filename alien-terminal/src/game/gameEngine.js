@@ -27,24 +27,42 @@ export function createGame() {
   }
 
   return {
-    playerRoom,
-    alienRoom,
-    turn: 1,
-    maxTurns: MAX_TURNS,
-    radarRoom: null,
-    radarActive: false,
-    locks: {},
-    newLock: null,
-    gameOver: false,
-    victory: false,
-    logs: [
-      "SYSTEM INITIALIZED.",
-      "WELCOME TO ALIEN TERMINAL.",
-      `LOCATION: ${rooms[playerRoom].name}`,
-      `SURVIVE ${MAX_TURNS} TURNS.`,
-      "TYPE HELP FOR AVAILABLE COMMANDS.",
-    ],
-  };
+  playerRoom,
+  alienRoom,
+  turn: 1,
+  maxTurns: MAX_TURNS,
+  radarRoom: null,
+  radarActive: false,
+  locks: {},
+  newLock: null,
+  gameOver: false,
+  victory: false,
+  logs: [
+    "SYSTEM INITIALIZED.",
+    "CRYOGENIC REVIVAL COMPLETE.",
+    "",
+    "YOU AWAKEN ALONE.",
+    "THE OTHER CRYO PODS ARE EMPTY.",
+    "SOME ARE OPEN. SOME ARE DAMAGED.",
+    "",
+    "YOU SEARCH THE SHIP.",
+    "NO CREW MEMBERS RESPOND.",
+    "YOU FIND THEM DEAD.",
+    "",
+    "SOMETHING IS LOOSE ON BOARD.",
+    "SOMETHING THAT WAS NOT PART OF THE CREW.",
+    "",
+    "AUTOMATIC DISTRESS SIGNAL: ACTIVE.",
+    "HELP HAS BEEN REQUESTED.",
+    "RESCUE IS ON THE WAY.",
+    "",
+    "YOU ONLY HAVE TO SURVIVE UNTIL THEY ARRIVE.",
+    "",
+    `SURVIVE ${MAX_TURNS} TURNS.`,
+    `LOCATION: ${rooms[playerRoom].name}`,
+    "TYPE HELP FOR AVAILABLE COMMANDS.",
+  ],
+};
 }
 
 
@@ -57,28 +75,45 @@ export function moveAlien(game) {
     return game;
   }
 
-  const possibleRooms = alien.exits;
-
-  if (possibleRooms.length === 0) {
+  if (alien.exits.length === 0) {
     return game;
   }
 
-  const randomIndex = Math.floor(Math.random() * possibleRooms.length);
-  const nextRoom = possibleRooms[randomIndex];
+  const randomIndex = Math.floor(
+    Math.random() * alien.exits.length
+  );
 
+  const nextRoom = alien.exits[randomIndex];
+
+  // Alien tentou atravessar uma porta trancada.
+  if (isDoorLocked(game, game.alienRoom, nextRoom)) {
+    return {
+      ...game,
+      logs: [
+        ...game.logs,
+        "MOTION DETECTED.",
+        "LIFEFORM TRIED TO BREAK DOOR.",
+        `DOOR LOCKED: ${rooms[game.alienRoom].name} ↔ ${rooms[nextRoom].name}`,
+      ],
+    };
+  }
+
+  // Porta livre: Alien se move normalmente.
   const updatedGame = {
     ...game,
     alienRoom: nextRoom,
   };
 
+  // Alien encontrou o jogador.
   if (nextRoom === game.playerRoom) {
     updatedGame.gameOver = true;
+
     updatedGame.logs = [
       ...updatedGame.logs,
       "MOTION DETECTED.",
       "LIFEFORM HAS ENTERED YOUR LOCATION.",
       "CONNECTION TERMINATED.",
-      "GAME OVER.",
+
     ];
   }
 
@@ -236,8 +271,116 @@ export function executeCommand(game, input) {
     }
 
     case "LOOK": {
-
       const currentRoom = rooms[game.playerRoom];
+
+      // Se o Alien estiver na mesma sala, o sistema percebe algo estranho.
+      if (game.alienRoom === game.playerRoom) {
+        updatedGame.logs.push(
+          "YOU LOOK AROUND AND SEE SOMETHING THAT SHOULD NOT BE THERE...",
+          "I'M SORRY."
+        );
+      } else {
+        const lookComments = [
+          "YOU LOOK AROUND AND WONDER IF YOU ARE EVER GOING TO GET HOME AGAIN.",
+
+          "YOU LOOK AROUND AND FEEL SORRY FOR YOUR MATES.",
+
+          "YOU LOOK AROUND. EVERYTHING SEEMS NORMAL. THAT'S USUALLY WHEN THINGS GO WRONG.",
+
+          "YOU LOOK AROUND AND WONDER WHO DESIGNED THIS PLACE.",
+
+          "YOU LOOK AROUND AND REMEMBER THAT SPACE IS VERY, VERY COLD.",
+
+          "YOU LOOK AROUND AND HEAR THE HUM OF THE SHIP. IT ALMOST SOUNDS ALIVE.",
+
+          "YOU LOOK AROUND AND WONDER IF ANYONE IS LISTENING.",
+
+          "YOU LOOK AROUND AND THINK ABOUT THE PAY. SUDDENLY IT DOESN'T SEEM WORTH IT.",
+
+          "YOU LOOK AROUND AND REMEMBER THAT NOBODY CAN HEAR YOU SCREAM IN SPACE.",
+
+          "YOU LOOK AROUND AND NOTICE A STRANGE DAMP SPOT ON THE FLOOR. YOU DECIDE NOT TO INVESTIGATE.",
+
+          "YOU LOOK AROUND AND SEE AN ORANGE CAT. IT STARES AT YOU. YOU STARE BACK.",
+
+          "YOU LOOK AROUND AND WONDER WHY THE CAT ALWAYS SEEMS TO KNOW MORE THAN YOU DO.",
+
+          "YOU LOOK AROUND AND SEE A CUP OF COFFEE. COLD. LIKE EVERYTHING ELSE ON THIS SHIP.",
+
+          "YOU LOOK AROUND AND WONDER IF THE COMPANY EVER ACTUALLY READ THE SAFETY REPORTS.",
+
+          "YOU LOOK AROUND AND REMEMBER THE COMPANY OWNS THIS SHIP. AND PROBABLY YOU TOO.",
+
+          "YOU LOOK AROUND AND FIND A NOTE: 'DO NOT OPEN THE DOOR.' YOU WONDER WHICH DOOR.",
+
+          "YOU LOOK AROUND AND NOTICE A SMALL AMOUNT OF BLOOD. PROBABLY NOTHING.",
+
+          "YOU LOOK AROUND AND DECIDE THAT 'PROBABLY NOTHING' IS NOT VERY REASSURING.",
+
+          "YOU LOOK AROUND AND WONDER IF THE MOTION DETECTOR IS WORKING PROPERLY.",
+
+          "YOU LOOK AROUND AND HEAR SOMETHING IN THE VENTS. YOU TELL YOURSELF IT'S THE AIRFLOW.",
+
+          "YOU LOOK AROUND AND THINK ABOUT THE LAST TIME YOU SAW SUNLIGHT.",
+
+          "YOU LOOK AROUND AND WONDER IF YOU WILL EVER SEE EARTH AGAIN.",
+
+          "YOU LOOK AROUND AND REMEMBER: IN SPACE, NO ONE CAN HEAR YOU ASK FOR A REFUND.",
+
+          "YOU LOOK AROUND AND SEE A REVOLVER. MAYBE IT WOULD BE USEFUL LATER... NOT ON THE ALIEN, OF COURSE.",
+
+          "YOU LOOK AROUND AND FIND A PAIR OF OLD WORK GLOVES. THEY SMELL TERRIBLE.",
+
+          "YOU LOOK AROUND AND WONDER WHY THERE ARE SO MANY EMPTY CRYOTUBES.",
+
+          "YOU LOOK AROUND AND SEE CONDENSATION ON THE WALL. SOMETHING HERE IS COLDER THAN IT SHOULD BE.",
+
+          "YOU LOOK AROUND AND REMEMBER THAT THE SHIP WAS SUPPOSED TO BE AUTOMATED.",
+
+          "YOU LOOK AROUND AND WONDER WHO IS REALLY IN CONTROL OF THE SHIP.",
+
+          "YOU LOOK AROUND AND FEEL THAT SOMETHING IS WATCHING YOU.",
+
+          "YOU LOOK AROUND. NOTHING MOVES. YOU PREFER IT THAT WAY.",
+
+          "YOU LOOK AROUND AND WONDER HOW MUCH THE COMPANY WOULD PAY FOR A SURVIVOR.",
+
+          "YOU LOOK AROUND AND REMEMBER THE BRIEFING: 'JUST A ROUTINE SALVAGE OPERATION.'",
+
+          "YOU LOOK AROUND AND THINK THAT 'ROUTINE' WAS PROBABLY THE WRONG WORD.",
+
+          "YOU LOOK AROUND AND NOTICE SCRATCH MARKS ON THE WALL. THEY ARE TOO HIGH TO BE YOURS.",
+
+          "YOU LOOK AROUND AND WONDER WHY THE AIRLOCK HAS BEEN USED SO RECENTLY.",
+
+          "YOU LOOK AROUND AND HEAR METAL CREAKING SOMEWHERE FAR AWAY.",
+
+          "YOU LOOK AROUND AND THINK: MAYBE THE MOST DANGEROUS THING ON THIS SHIP IS THE COMPANY POLICY.",
+
+          "YOU LOOK AROUND AND REMEMBER THAT THERE IS NO RESCUE SHIP COMING.",
+
+          "YOU LOOK AROUND AND REALIZE YOU HAVE BEEN TALKING TO THE COMPUTER FOR TOO LONG.",
+
+          "YOU LOOK AROUND AND WONDER IF THE COMPUTER FEELS SORRY FOR YOU.",
+
+          "YOU LOOK AROUND AND THE SHIP LOOKS EXACTLY THE SAME AS IT DID A MINUTE AGO. SOMEHOW, THAT IS WORSE.",
+
+          "YOU LOOK AROUND AND WISH YOU HAD STAYED IN CRYO.",
+
+          "YOU LOOK AROUND AND THINK ABOUT THE WORD 'SURVIVAL'. IT SOUNDS VERY EXPENSIVE.",
+
+          "YOU LOOK AROUND AND REMEMBER THAT THE COMPANY NEVER MENTIONED AN ALIEN.",
+
+          "YOU LOOK AROUND AND WONDER WHAT ELSE THE COMPANY FORGOT TO MENTION."
+        ];
+
+        const randomComment =
+          lookComments[
+          Math.floor(Math.random() * lookComments.length)
+          ];
+
+        updatedGame.logs.push(randomComment);
+      }
 
       updatedGame.logs.push(
         `CURRENT LOCATION: ${currentRoom.name}`,

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { rooms } from "../game/rooms";
+import { isDoorLocked, getLockKey } from "../game/gameEngine";
 
 export default function Map({ game, onExit }) {
     const roomIds = [
@@ -145,21 +146,52 @@ export default function Map({ game, onExit }) {
             >
                 <svg className="map-connections">
                     {connections.map(([roomA, roomB]) => {
-                        const points = getConnectionPoints(
-                            roomA,
-                            roomB
-                        );
+                        const points = getConnectionPoints(roomA, roomB);
 
                         if (!points) return null;
 
+                        const lockKey = getLockKey(roomA, roomB);
+                        const battery = game.locks[lockKey] ?? 0;
+                        const isLocked = battery > 0;
+
+                        const centerX =
+                            (points.startX + points.endX) / 2;
+
+                        const centerY =
+                            (points.startY + points.endY) / 2;
+
                         return (
-                            <line
-                                key={`${roomA}-${roomB}`}
-                                x1={points.startX}
-                                y1={points.startY}
-                                x2={points.endX}
-                                y2={points.endY}
-                            />
+                            <g key={`${roomA}-${roomB}`}>
+                                <line
+                                    x1={points.startX}
+                                    y1={points.startY}
+                                    x2={points.endX}
+                                    y2={points.endY}
+                                    className={isLocked ? "locked-connection" : ""}
+                                />
+
+                                {isLocked && (
+                                    <g
+                                        className="lock-battery"
+                                        transform={`translate(${centerX}, ${centerY})`}
+                                    >
+                                        {[0, 1, 2].map((index) => (
+                                            <rect
+                                                key={index}
+                                                x={-12 + index * 10}
+                                                y="-3"
+                                                width="7"
+                                                height="6"
+                                                className={
+                                                    index < battery
+                                                        ? "battery-active"
+                                                        : "battery-empty"
+                                                }
+                                            />
+                                        ))}
+                                    </g>
+                                )}
+                            </g>
                         );
                     })}
                 </svg>
@@ -177,9 +209,8 @@ export default function Map({ game, onExit }) {
                     return (
                         <div
                             key={roomId}
-                            className={`room room-${roomId} ${
-                                isPlayer ? "player-room" : ""
-                            }`}
+                            className={`room room-${roomId} ${isPlayer ? "player-room" : ""
+                                }`}
                         >
                             <span className="room-name">
                                 {room.name}

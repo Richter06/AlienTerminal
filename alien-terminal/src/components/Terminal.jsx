@@ -1,14 +1,18 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export default function Terminal({ game, onCommand }) {
+export default function Terminal({
+  game,
+  onCommand,
+  gameOverDots,
+}) {
   const [input, setInput] = useState("");
   const [cursorPosition, setCursorPosition] = useState(0);
 
   const terminalEndRef = useRef(null);
   const inputRef = useRef(null);
   const cursorRef = useRef(null);
-  
+
 
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({
@@ -43,30 +47,30 @@ export default function Terminal({ game, onCommand }) {
     setCursorPosition(event.target.selectionStart);
   }
 
- function updateCursorPosition() {
-  if (!inputRef.current || !cursorRef.current) {
-    return;
+  function updateCursorPosition() {
+    if (!inputRef.current || !cursorRef.current) {
+      return;
+    }
+
+    const styles = getComputedStyle(inputRef.current);
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    context.font = styles.font;
+
+    const textBeforeCursor = input.slice(0, cursorPosition);
+
+    let width = context.measureText(textBeforeCursor).width;
+
+    const letterSpacing = parseFloat(styles.letterSpacing) || 0;
+
+    if (textBeforeCursor.length > 0) {
+      width += letterSpacing * textBeforeCursor.length;
+    }
+
+    cursorRef.current.style.left = `${width}px`;
   }
-
-  const styles = getComputedStyle(inputRef.current);
-
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
-
-  context.font = styles.font;
-
-  const textBeforeCursor = input.slice(0, cursorPosition);
-
-  let width = context.measureText(textBeforeCursor).width;
-
-  const letterSpacing = parseFloat(styles.letterSpacing) || 0;
-
-  if (textBeforeCursor.length > 0) {
-    width += letterSpacing * textBeforeCursor.length;
-  }
-
-  cursorRef.current.style.left = `${width}px`;
-}
 
   return (
     <section className="terminal-panel">
@@ -77,6 +81,12 @@ export default function Terminal({ game, onCommand }) {
           <div key={index}>{log}</div>
         ))}
 
+        {gameOverDots.map((dot, index) => (
+          <div key={`game-over-${index}`}>
+            {dot}
+          </div>
+        ))}
+
         <div ref={terminalEndRef} />
       </div>
 
@@ -85,8 +95,8 @@ export default function Terminal({ game, onCommand }) {
           <span>&gt;</span>
 
           <div className="terminal-input-wrapper">
-           
-            
+
+
 
             <input
               ref={inputRef}

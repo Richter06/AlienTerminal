@@ -1222,3 +1222,341 @@ body {
   }
 
 }
+
+
+
+/* =========================================================
+   MENU
+   ========================================================= */
+
+.menu-screen {
+  min-height: 700px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  position: relative;
+}
+
+.menu-content {
+  width: min(620px, 100%);
+  text-align: center;
+}
+
+.menu-header {
+  margin-bottom: 50px;
+  color: var(--ink-dim);
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.menu-title {
+  color: var(--ink-bright);
+  font-size: 30px;
+  font-weight: normal;
+  letter-spacing: 8px;
+  text-shadow:
+    0 0 5px rgba(var(--glow-rgb), 0.45);
+}
+
+.menu-subtitle {
+  margin-top: 12px;
+  color: var(--ink-dim);
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 60px;
+}
+
+.menu-options button {
+  width: 260px;
+  padding: 10px 14px;
+  border: 1px solid var(--ink-faint);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.menu-options button:hover {
+  border-color: var(--ink);
+  background: var(--ink-ghost);
+  color: var(--ink-bright);
+  text-shadow:
+    0 0 4px rgba(var(--glow-rgb), 0.4);
+}
+
+.menu-footer {
+  margin-top: 70px;
+  color: var(--ink-faint);
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+
+/* =========================================================
+   LOADING SCREEN
+   ========================================================= */
+
+.loading-screen {
+  min-height: 700px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.loading-content {
+  width: min(700px, 100%);
+}
+
+.loading-header {
+  margin-bottom: 28px;
+  color: var(--ink-bright);
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.loading-status {
+  margin-bottom: 10px;
+  color: var(--ink);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.loading-bar {
+  width: 100%;
+  height: 24px;
+  border: 1px solid var(--ink-faint);
+  background: var(--bg-well);
+  overflow: hidden;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  background: var(--ink);
+  box-shadow:
+    0 0 6px rgba(var(--glow-rgb), 0.25);
+  transition: width 0.03s linear;
+}
+
+.loading-progress {
+  margin-top: 12px;
+  color: var(--ink-bright);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   TUTORIAL MODAL
+   ========================================================= */
+
+.tutorial-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  background: rgba(3, 4, 2, 0.94);
+}
+
+.tutorial-modal {
+  width: min(720px, 100%);
+  max-height: calc(100% - 40px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ink-faint);
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow:
+    inset 0 0 60px rgba(0, 0, 0, 0.8);
+}
+
+.tutorial-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--ink-faint);
+  background: var(--ink);
+  color: #01100a;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.tutorial-content {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.tutorial-content h2 {
+  margin: 0 0 18px;
+  color: var(--ink-bright);
+  font-size: 18px;
+  font-weight: normal;
+  letter-spacing: 3px;
+}
+
+.tutorial-content p {
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.7;
+  letter-spacing: 0.4px;
+}
+
+.tutorial-content strong {
+  color: var(--ink-bright);
+  font-weight: normal;
+}
+
+.tutorial-section {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--ink-ghost);
+}
+
+.tutorial-section h3 {
+  margin: 0 0 14px;
+  color: var(--ink-dim);
+  font-size: 11px;
+  font-weight: normal;
+  letter-spacing: 2px;
+}
+
+.tutorial-close {
+  margin: 0 24px 24px;
+  padding: 8px 12px;
+  align-self: flex-start;
+  border: 1px solid var(--ink-faint);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.tutorial-close::before {
+  content: "> ";
+}
+
+.tutorial-close:hover {
+  border-color: var(--ink-bright);
+  color: var(--ink-bright);
+  background: var(--ink-ghost);
+}
+
+
+.tutorial-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.tutorial-content::-webkit-scrollbar-track {
+  background: var(--bg-well);
+  border-radius: 0;
+}
+
+.tutorial-content::-webkit-scrollbar-thumb {
+  background: var(--ink-faint);
+  border-radius: 0 !important;
+  border: none;
+  box-shadow: none;
+}
+
+.tutorial-content::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-dim);
+}
+
+
+
+/* =========================================================
+   MENU / LOADING / TUTORIAL — MOBILE
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+  .menu-screen,
+  .loading-screen {
+    min-height: 100vh;
+    padding: 30px 12px;
+  }
+
+  .menu-header {
+    margin-bottom: 40px;
+    font-size: 9px;
+  }
+
+  .menu-title {
+    font-size: 22px;
+    letter-spacing: 5px;
+  }
+
+  .menu-subtitle {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .menu-options {
+    margin-top: 50px;
+  }
+
+  .menu-options button {
+    width: min(260px, 100%);
+  }
+
+  .menu-footer {
+    margin-top: 55px;
+  }
+
+  .loading-header {
+    font-size: 10px;
+    line-height: 1.6;
+  }
+
+  .loading-status {
+    font-size: 10px;
+  }
+
+  .loading-bar {
+    height: 20px;
+  }
+
+  .tutorial-overlay {
+    padding: 12px;
+  }
+
+  .tutorial-modal {
+    max-height: calc(100% - 20px);
+  }
+
+  .tutorial-content {
+    padding: 18px;
+  }
+
+  .tutorial-content h2 {
+    font-size: 16px;
+  }
+
+  .tutorial-content p {
+    font-size: 11px;
+  }
+
+  .tutorial-close {
+    margin-left: 18px;
+    margin-right: 18px;
+    margin-bottom: 18px;
+  }
+}

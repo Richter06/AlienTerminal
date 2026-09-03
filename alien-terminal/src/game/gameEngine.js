@@ -46,6 +46,54 @@ export function getRandomSoundDevices() {
   return soundDevices;
 }
 
+/**
+ * Gera de 1 a 3 vents em salas diferentes.
+ */
+export function getRandomVents() {
+  const amount =
+    Math.floor(Math.random() * 3) + 1;
+
+  const availableRooms = [...roomList];
+  const vents = [];
+
+  while (
+    vents.length < amount &&
+    availableRooms.length > 0
+  ) {
+    const randomIndex = Math.floor(
+      Math.random() * availableRooms.length
+    );
+
+    const [room] = availableRooms.splice(
+      randomIndex,
+      1
+    );
+
+    vents.push(room.id);
+  }
+
+  return vents;
+}
+
+export function hasVent(roomId, vents) {
+  return vents?.includes(roomId) ?? false;
+}
+
+/**
+ * Escolhe aleatoriamente uma sala que possui vent.
+ */
+export function getRandomVentRoom(vents) {
+  if (!vents || vents.length === 0) {
+    return null;
+  }
+
+  const randomIndex = Math.floor(
+    Math.random() * vents.length
+  );
+
+  return vents[randomIndex];
+}
+
 export function createGame() {
   let playerRoom = getRandomRoom();
   let alienRoom = getRandomRoom();
@@ -56,10 +104,15 @@ export function createGame() {
   }
 
   const soundDevices = getRandomSoundDevices();
+  const vents = getRandomVents();
 
   return {
     playerRoom,
     alienRoom,
+
+    // "normal" = Alien está em uma sala.
+    // "inVent" = Alien está na rede de ventilação.
+    alienState: "normal",
 
     turn: 1,
     maxTurns: MAX_TURNS,
@@ -72,6 +125,8 @@ export function createGame() {
 
     soundDevices,
     activeSound: null,
+
+    vents,
 
     gameOver: false,
     victory: false,
@@ -104,25 +159,13 @@ export function createGame() {
   };
 }
 
-/*
+/**
  * Encontra o melhor caminho entre duas salas.
  *
  * Prioridade:
  *
  * 1. Menor quantidade de locks atravessados.
  * 2. Menor distância.
- *
- * Portanto:
- *
- * CAMINHO A
- * HUB → CARGO → AIRLOCK
- * 1 lock
- *
- * CAMINHO B
- * HUB → MESS → MEDBAY → CRYO
- * 0 locks
- *
- * O caminho B será escolhido mesmo sendo maior.
  */
 export function findPathToRoom(game, targetRoom) {
   const startRoom = game.alienRoom;
@@ -206,10 +249,13 @@ export function findPathToRoom(game, targetRoom) {
 
       if (previousCost) {
         const isWorse =
-          nextLockCount > previousCost.lockCount ||
+          nextLockCount >
+          previousCost.lockCount ||
           (
-            nextLockCount === previousCost.lockCount &&
-            nextDistance >= previousCost.distance
+            nextLockCount ===
+            previousCost.lockCount &&
+            nextDistance >=
+            previousCost.distance
           );
 
         if (isWorse) {
@@ -232,10 +278,12 @@ export function findPathToRoom(game, targetRoom) {
 
         lockedDoors: locked
           ? [
-              ...current.lockedDoors,
-              lockKey,
-            ]
-          : [...current.lockedDoors],
+            ...current.lockedDoors,
+            lockKey,
+          ]
+          : [
+            ...current.lockedDoors,
+          ],
 
         lockCount: nextLockCount,
         distance: nextDistance,
@@ -246,13 +294,75 @@ export function findPathToRoom(game, targetRoom) {
   return null;
 }
 
-/*
- * Move o Alien normalmente.
+/**
+ * Coloca o Alien dentro da rede de ventilação.
  *
- * Movimento normal continua sendo aleatório.
- * Locks continuam bloqueando o Alien.
+ * Não gera nenhum log.
+ */
+export function enterVent(game) {
+  return {
+    ...game,
+    alienState: "inVent",
+    alienRoom: null,
+  };
+}
+
+/**
+ * Verifica se todas as saídas de uma sala estão trancadas.
+ *
+ * Usado para aumentar a chance do Alien entrar
+ * na ventilação quando ele estiver encurralado.
+ */
+export function areAllExitsLocked(game, roomId) {
+  const room = rooms[roomId];
+
+  if (!room || room.exits.length === 0) {
+    return false;
+  }
+
+  return room.exits.every((exitId) =>
+    isDoorLocked(
+      game,
+      roomId,
+      exitId
+    )
+  );
+}
+
+/**
+ * Decide a chance de entrada do Alien na ventilação.
+ *
+ * 80% → todas as saídas da sala estão trancadas.
+ * 40% → caso normal.
+ */
+export function getVentEntryChance(game, roomId) {
+  if (!hasVent(roomId, game.vents)) {
+    return 0;
+  }
+
+  if (areAllExitsLocked(game, roomId)) {
+    return 0.80;
+  }
+
+  return 0.40;
+}
+
+/**
+ * Movimento normal do Alien.
+ *
+ * O Alien escolhe uma saída aleatória.
+ * Se ela estiver trancada, ele permanece na sala.
+ *
+ * Ao chegar em uma sala com vent:
+ *
+ * 20% → entra na ventilação normalmente.
+ * 80% → entra se todas as saídas estiverem trancadas.
  */
 export function moveAlien(game) {
+  if (game.alienState === "inVent") {
+    return handleVentTurn(game);
+  }
+
   const alien = rooms[game.alienRoom];
 
   if (!alien) {
@@ -267,7 +377,8 @@ export function moveAlien(game) {
     Math.random() * alien.exits.length
   );
 
-  const nextRoom = alien.exits[randomIndex];
+  const nextRoom =
+    alien.exits[randomIndex];
 
   // Alien tentou atravessar uma porta trancada.
   if (
@@ -290,7 +401,7 @@ export function moveAlien(game) {
   }
 
   // Porta livre: Alien se move normalmente.
-  const updatedGame = {
+  let updatedGame = {
     ...game,
     alienRoom: nextRoom,
   };
@@ -305,31 +416,316 @@ export function moveAlien(game) {
       "LIFEFORM HAS ENTERED YOUR LOCATION.",
       "CONNECTION TERMINATED.",
     ];
+
+    return updatedGame;
+  }
+
+  // Alien encontrou uma sala com vent.
+  if (hasVent(nextRoom, game.vents)) {
+    const ventChance =
+      getVentEntryChance(
+        game,
+        nextRoom
+      );
+
+    const entersVent =
+      Math.random() < ventChance;
+
+    if (entersVent) {
+      updatedGame =
+        enterVent(updatedGame);
+    }
   }
 
   return updatedGame;
 }
 
-/*
+/**
+ * Decide o que o Alien faz enquanto está
+ * escondido na ventilação.
+ *
+ * 75% → permanece escondido.
+ * 25% → sai por um vent aleatório.
+ */
+export function handleVentTurn(game) {
+  if (game.alienState !== "inVent") {
+    return game;
+  }
+
+  if (!game.vents || game.vents.length === 0) {
+    return game;
+  }
+
+  const exitsVent =
+    Math.random() < 0.25;
+
+  if (!exitsVent) {
+    return game;
+  }
+
+  const exitRoom =
+    getRandomVentRoom(game.vents);
+
+  if (!exitRoom) {
+    return game;
+  }
+
+  let updatedGame = {
+    ...game,
+    alienState: "normal",
+    alienRoom: exitRoom,
+  };
+
+  // O Alien saiu exatamente onde o jogador está.
+  if (
+    exitRoom === game.playerRoom
+  ) {
+    updatedGame.gameOver = true;
+
+    updatedGame.logs = [
+      ...updatedGame.logs,
+      "MOTION DETECTED.",
+      "LIFEFORM HAS ENTERED YOUR LOCATION.",
+      "CONNECTION TERMINATED.",
+    ];
+
+    return updatedGame;
+  }
+
+  return updatedGame;
+}
+
+/**
  * Movimento especial provocado pelo SOUND.
  *
- * Diferente do movimento normal:
+ * Existem dois cenários:
  *
- * - o Alien segue o caminho calculado;
- * - locks no caminho são destruídos;
- * - o Alien chega diretamente ao dispositivo;
- * - não existe uma segunda movimentação aleatória.
+ * 1. Alien normal:
+ *    segue o caminho até o SOUND.
+ *
+ * 2. Alien na ventilação:
+ *    - se a sala do SOUND possui vent,
+ *      sai exatamente por esse vent;
+ *    - caso contrário, sai por um vent aleatório
+ *      e depois segue até o SOUND.
  */
-export function moveAlienToSound(game, targetRoom) {
-  const result = findPathToRoom(
-    game,
-    targetRoom
-  );
+export function moveAlienToSound(
+  game,
+  targetRoom
+) {
+  /*
+   * ALIEN ESTÁ NA VENTILAÇÃO
+   */
+  if (game.alienState === "inVent") {
+    const targetHasVent =
+      hasVent(
+        targetRoom,
+        game.vents
+      );
+
+    /*
+     * Se existe vent na sala do SOUND,
+     * o Alien sai exatamente por ele.
+     */
+    if (targetHasVent) {
+      let updatedGame = {
+        ...game,
+        alienState: "normal",
+        alienRoom: targetRoom,
+        activeSound: targetRoom,
+      };
+
+      // O dispositivo foi alcançado.
+      if (
+        updatedGame.soundDevices.includes(
+          targetRoom
+        )
+      ) {
+        updatedGame.logs.push(
+          "THE LIFEFORM HAS DAMAGED THE SOUND DEVICE."
+        );
+
+        updatedGame.soundDevices =
+          updatedGame.soundDevices.filter(
+            (roomId) =>
+              roomId !== targetRoom
+          );
+      }
+
+      updatedGame.activeSound = null;
+
+      // O jogador estava na sala do SOUND.
+      if (
+        updatedGame.alienRoom ===
+        updatedGame.playerRoom
+      ) {
+        updatedGame.gameOver = true;
+
+        updatedGame.logs.push(
+          "MOTION DETECTED.",
+          "LIFEFORM HAS ENTERED YOUR LOCATION.",
+          "CONNECTION TERMINATED."
+        );
+      }
+
+      return updatedGame;
+    }
+
+    /*
+     * A sala do SOUND não possui vent.
+     *
+     * O Alien sai por outro vent aleatório.
+     */
+    const exitRoom =
+      getRandomVentRoom(
+        game.vents
+      );
+
+    if (!exitRoom) {
+      return {
+        ...game,
+        activeSound: null,
+      };
+    }
+
+    let updatedGame = {
+      ...game,
+      alienState: "normal",
+      alienRoom: exitRoom,
+      activeSound: targetRoom,
+    };
+
+    /*
+     * O Alien saiu justamente na sala
+     * onde o jogador está.
+     */
+    if (
+      exitRoom === game.playerRoom
+    ) {
+      updatedGame.gameOver = true;
+
+      updatedGame.logs.push(
+        "MOTION DETECTED.",
+        "LIFEFORM HAS ENTERED YOUR LOCATION.",
+        "CONNECTION TERMINATED."
+      );
+
+      updatedGame.activeSound = null;
+
+      return updatedGame;
+    }
+
+    /*
+     * Agora que ele saiu da ventilação,
+     * segue o caminho normal até o SOUND.
+     */
+    const result =
+      findPathToRoom(
+        updatedGame,
+        targetRoom
+      );
+
+    if (!result) {
+      updatedGame.activeSound = null;
+
+      updatedGame.logs.push(
+        "LIFEFORM UNABLE TO REACH SOUND SOURCE."
+      );
+
+      return updatedGame;
+    }
+
+    // Destrói todos os locks existentes
+    // no caminho escolhido.
+    for (
+      const lockKey of result.lockedDoors
+    ) {
+      const lockRooms =
+        Object.keys(rooms).filter(
+          (roomId) =>
+            lockKey.includes(roomId)
+        );
+
+      if (lockRooms.length !== 2) {
+        continue;
+      }
+
+      const [roomA, roomB] =
+        lockRooms;
+
+      updatedGame.logs.push(
+        `LOCK DAMAGED: ${rooms[roomA].name} ↔ ${rooms[roomB].name}.`
+      );
+
+      const updatedLocks = {
+        ...updatedGame.locks,
+      };
+
+      delete updatedLocks[lockKey];
+
+      updatedGame.locks =
+        updatedLocks;
+    }
+
+    // O Alien percorreu o caminho.
+    updatedGame.alienRoom =
+      targetRoom;
+
+    // O dispositivo foi alcançado.
+    if (
+      updatedGame.activeSound ===
+      targetRoom &&
+      updatedGame.soundDevices.includes(
+        targetRoom
+      )
+    ) {
+      updatedGame.logs.push(
+        "THE LIFEFORM HAS DAMAGED THE SOUND DEVICE."
+      );
+
+      updatedGame.soundDevices =
+        updatedGame.soundDevices.filter(
+          (roomId) =>
+            roomId !== targetRoom
+        );
+    }
+
+    updatedGame.activeSound = null;
+
+    // Se o jogador estiver na sala do som,
+    // o Alien encontrou o jogador.
+    if (
+      updatedGame.alienRoom ===
+      updatedGame.playerRoom
+    ) {
+      updatedGame.gameOver = true;
+
+      updatedGame.logs.push(
+        "MOTION DETECTED.",
+        "LIFEFORM HAS ENTERED YOUR LOCATION.",
+        "CONNECTION TERMINATED."
+      );
+    }
+
+    return updatedGame;
+  }
+
+  /*
+   * ALIEN ESTÁ EM UMA SALA NORMAL
+   */
+
+  const result =
+    findPathToRoom(
+      game,
+      targetRoom
+    );
 
   if (!result) {
     return {
       ...game,
+
       activeSound: null,
+
       logs: [
         ...game.logs,
         "LIFEFORM UNABLE TO REACH SOUND SOURCE.",
@@ -342,20 +738,23 @@ export function moveAlienToSound(game, targetRoom) {
     activeSound: targetRoom,
   };
 
-  /*
-   * Destrói todos os locks existentes
-   * no caminho escolhido.
-   */
-  for (const lockKey of result.lockedDoors) {
-    const lockRooms = Object.keys(rooms).filter(
-      (roomId) => lockKey.includes(roomId)
-    );
+  // Destrói todos os locks existentes
+  // no caminho escolhido.
+  for (
+    const lockKey of result.lockedDoors
+  ) {
+    const lockRooms =
+      Object.keys(rooms).filter(
+        (roomId) =>
+          lockKey.includes(roomId)
+      );
 
     if (lockRooms.length !== 2) {
       continue;
     }
 
-    const [roomA, roomB] = lockRooms;
+    const [roomA, roomB] =
+      lockRooms;
 
     updatedGame.logs.push(
       `LOCK DAMAGED: ${rooms[roomA].name} ↔ ${rooms[roomB].name}.`
@@ -367,20 +766,21 @@ export function moveAlienToSound(game, targetRoom) {
 
     delete updatedLocks[lockKey];
 
-    updatedGame.locks = updatedLocks;
+    updatedGame.locks =
+      updatedLocks;
   }
 
-  /*
-   * O Alien percorreu o caminho.
-   */
-  updatedGame.alienRoom = targetRoom;
+  // O Alien percorreu o caminho.
+  updatedGame.alienRoom =
+    targetRoom;
 
-  /*
-   * O dispositivo foi alcançado.
-   */
+  // O dispositivo foi alcançado.
   if (
-    updatedGame.activeSound === targetRoom &&
-    updatedGame.soundDevices.includes(targetRoom)
+    updatedGame.activeSound ===
+    targetRoom &&
+    updatedGame.soundDevices.includes(
+      targetRoom
+    )
   ) {
     updatedGame.logs.push(
       "THE LIFEFORM HAS DAMAGED THE SOUND DEVICE."
@@ -388,16 +788,15 @@ export function moveAlienToSound(game, targetRoom) {
 
     updatedGame.soundDevices =
       updatedGame.soundDevices.filter(
-        (roomId) => roomId !== targetRoom
+        (roomId) =>
+          roomId !== targetRoom
       );
   }
 
   updatedGame.activeSound = null;
 
-  /*
-   * Se o jogador estiver na sala do som,
-   * o Alien encontrou o jogador.
-   */
+  // Se o jogador estiver na sala do som,
+  // o Alien encontrou o jogador.
   if (
     updatedGame.alienRoom ===
     updatedGame.playerRoom
@@ -417,47 +816,86 @@ export function moveAlienToSound(game, targetRoom) {
 export function updateLocks(game) {
   const updatedLocks = {};
 
-  for (const [lockKey, battery] of Object.entries(
-    game.locks
-  )) {
+  for (
+    const [lockKey, battery] of Object.entries(
+      game.locks
+    )
+  ) {
+    // Lock recém-criado não perde bateria
+    // no mesmo turno em que foi criado.
     if (lockKey === game.newLock) {
-      updatedLocks[lockKey] = battery;
+      updatedLocks[lockKey] =
+        battery;
+
       continue;
     }
 
-    const remaining = battery - 1;
+    const remaining =
+      battery - 1;
 
     if (remaining > 0) {
-      updatedLocks[lockKey] = remaining;
+      updatedLocks[lockKey] =
+        remaining;
     }
   }
 
   return {
     ...game,
+
     locks: updatedLocks,
+
     newLock: null,
   };
 }
 
 export function advanceTurn(game) {
-  if (game.gameOver || game.victory) {
+  if (
+    game.gameOver ||
+    game.victory
+  ) {
     return game;
   }
 
-  const nextTurn = game.turn + 1;
+  const nextTurn =
+    game.turn + 1;
 
   let updatedGame = {
     ...game,
     turn: nextTurn,
   };
 
-  updatedGame = updateLocks(updatedGame);
+  updatedGame =
+    updateLocks(updatedGame);
 
-  updatedGame = moveAlien(updatedGame);
+  /*
+   * O Alien toma exatamente uma decisão
+   * por turno.
+   *
+   * Se estiver nos vents:
+   * handleVentTurn().
+   *
+   * Caso contrário:
+   * movimento normal.
+   */
+  if (
+    updatedGame.alienState ===
+    "inVent"
+  ) {
+    updatedGame =
+      handleVentTurn(
+        updatedGame
+      );
+  } else {
+    updatedGame =
+      moveAlien(
+        updatedGame
+      );
+  }
 
   if (
     !updatedGame.gameOver &&
-    nextTurn >= updatedGame.maxTurns
+    nextTurn >=
+    updatedGame.maxTurns
   ) {
     updatedGame.victory = true;
 
@@ -472,30 +910,39 @@ export function advanceTurn(game) {
   return updatedGame;
 }
 
-/*
+/**
  * Avança o turno sem realizar o movimento
  * aleatório normal do Alien.
  *
- * Usado pelo SOUND, porque o próprio SOUND
- * já movimenta o Alien.
+ * Usado pelo SOUND e pelo STEAM,
+ * quando o próprio comando já determina
+ * o comportamento do Alien.
  */
-export function advanceTurnWithoutAlien(game) {
-  if (game.gameOver || game.victory) {
+export function advanceTurnWithoutAlien(
+  game
+) {
+  if (
+    game.gameOver ||
+    game.victory
+  ) {
     return game;
   }
 
-  const nextTurn = game.turn + 1;
+  const nextTurn =
+    game.turn + 1;
 
   let updatedGame = {
     ...game,
     turn: nextTurn,
   };
 
-  updatedGame = updateLocks(updatedGame);
+  updatedGame =
+    updateLocks(updatedGame);
 
   if (
     !updatedGame.gameOver &&
-    nextTurn >= updatedGame.maxTurns
+    nextTurn >=
+    updatedGame.maxTurns
   ) {
     updatedGame.victory = true;
 
@@ -510,24 +957,108 @@ export function advanceTurnWithoutAlien(game) {
   return updatedGame;
 }
 
-export function executeCommand(game, input) {
-  const command = input.trim().toUpperCase();
+/**
+ * Tenta expulsar o Alien da ventilação.
+ *
+ * 30% → sucesso.
+ * 70% → falha.
+ *
+ * O jogador NÃO é informado sobre o resultado.
+ * Ele precisa usar RADAR depois.
+ */
+export function useSteam(game) {
+  if (
+    game.alienState !==
+    "inVent"
+  ) {
+    return game;
+  }
+
+  if (
+    !game.vents ||
+    game.vents.length === 0
+  ) {
+    return game;
+  }
+
+  const steamSuccess =
+    Math.random() < 0.30;
+
+  if (!steamSuccess) {
+    return game;
+  }
+
+  const exitRoom =
+    getRandomVentRoom(
+      game.vents
+    );
+
+  if (!exitRoom) {
+    return game;
+  }
+
+  let updatedGame = {
+    ...game,
+    alienState: "normal",
+    alienRoom: exitRoom,
+  };
+
+  /*
+   * O Alien pode sair justamente
+   * onde o jogador está.
+   */
+  if (
+    exitRoom ===
+    game.playerRoom
+  ) {
+    updatedGame.gameOver = true;
+
+    updatedGame.logs = [
+      ...updatedGame.logs,
+      "MOTION DETECTED.",
+      "LIFEFORM HAS ENTERED YOUR LOCATION.",
+      "CONNECTION TERMINATED.",
+    ];
+  }
+
+  return updatedGame;
+}
+
+/**
+ * Executa os comandos do terminal.
+ *
+ * HELP não consome turno.
+ * MAP é tratado pelo App.
+ * Comandos válidos restantes consomem turno.
+ * Comandos inválidos não consomem turno.
+ */
+export function executeCommand(
+  game,
+  input
+) {
+  const command =
+    input.trim().toUpperCase();
 
   if (!command) {
     return game;
   }
 
-  if (game.gameOver || game.victory) {
+  if (
+    game.gameOver ||
+    game.victory
+  ) {
     return game;
   }
 
-  const parts = command.split(/\s+/);
+  const parts =
+    command.split(/\s+/);
 
   let roomA = null;
   let roomB = null;
 
   /*
-   * Identifica dois nomes de sala para LOCK.
+   * Tenta separar dois nomes de salas
+   * para comandos LOCK.
    *
    * Exemplo:
    *
@@ -535,26 +1066,35 @@ export function executeCommand(game, input) {
    *
    * vira:
    *
-   * machine-shop
-   * engineering
+   * MACHINE-SHOP
+   * ENGINEERING
    */
-  for (let i = 2; i < parts.length; i++) {
-    const possibleRoomA = parts
-      .slice(1, i)
-      .join("-")
-      .toLowerCase();
+  for (
+    let i = 2;
+    i < parts.length;
+    i++
+  ) {
+    const possibleRoomA =
+      parts
+        .slice(1, i)
+        .join("-")
+        .toLowerCase();
 
-    const possibleRoomB = parts
-      .slice(i)
-      .join("-")
-      .toLowerCase();
+    const possibleRoomB =
+      parts
+        .slice(i)
+        .join("-")
+        .toLowerCase();
 
     if (
       rooms[possibleRoomA] &&
       rooms[possibleRoomB]
     ) {
-      roomA = possibleRoomA;
-      roomB = possibleRoomB;
+      roomA =
+        possibleRoomA;
+
+      roomB =
+        possibleRoomB;
 
       break;
     }
@@ -562,6 +1102,7 @@ export function executeCommand(game, input) {
 
   let updatedGame = {
     ...game,
+
     logs: [
       ...game.logs,
       `> ${command}`,
@@ -578,13 +1119,15 @@ export function executeCommand(game, input) {
         "LOOK - INSPECTS YOUR CURRENT ROOM AND AVAILABLE EXITS.",
         "LOCK [ROOM] [ROOM] - ENGAGES A TEMPORARY LOCK BETWEEN TWO ROOMS.",
         "SOUND [ROOM] - ACTIVATES A SOUND DEVICE IN THE SPECIFIED ROOM.",
+        "STEAM - RELEASES STEAM INTO THE VENTILATION SYSTEM.",
         "MAP - DISPLAYS THE SHIP SCHEMATIC.",
         "",
         "LOCKS REQUIRE TWO ADJACENT ROOMS.",
         "EXAMPLE: LOCK CARGO AIRLOCK."
       );
 
-      break;
+      // HELP não consome turno.
+      return updatedGame;
 
     case "STATUS": {
       updatedGame.logs.push(
@@ -594,9 +1137,13 @@ export function executeCommand(game, input) {
       );
 
       const activeLocks =
-        Object.entries(game.locks);
+        Object.entries(
+          game.locks
+        );
 
-      if (activeLocks.length === 0) {
+      if (
+        activeLocks.length === 0
+      ) {
         updatedGame.logs.push(
           "ACTIVE LOCKS: NONE"
         );
@@ -608,22 +1155,32 @@ export function executeCommand(game, input) {
         "ACTIVE LOCKS:"
       );
 
-      for (const [
-        lockKey,
-        battery,
-      ] of activeLocks) {
+      for (
+        const [
+          lockKey,
+          battery,
+        ] of activeLocks
+      ) {
         const lockRooms =
-          Object.keys(rooms).filter(
+          Object.keys(
+            rooms
+          ).filter(
             (roomId) =>
-              lockKey.includes(roomId)
+              lockKey.includes(
+                roomId
+              )
           );
 
-        if (lockRooms.length !== 2) {
+        if (
+          lockRooms.length !== 2
+        ) {
           continue;
         }
 
-        const [roomA, roomB] =
-          lockRooms;
+        const [
+          roomA,
+          roomB,
+        ] = lockRooms;
 
         updatedGame.logs.push(
           `${rooms[roomA].name} ↔ ${rooms[roomB].name} | BATTERY: ${"█".repeat(battery)}`
@@ -635,11 +1192,13 @@ export function executeCommand(game, input) {
 
     case "LOOK": {
       const currentRoom =
-        rooms[game.playerRoom];
+        rooms[
+        game.playerRoom
+        ];
 
-      // Se o Alien estiver na mesma sala,
-      // o sistema percebe algo estranho.
       if (
+        game.alienState ===
+        "normal" &&
         game.alienRoom ===
         game.playerRoom
       ) {
@@ -694,15 +1253,15 @@ export function executeCommand(game, input) {
           "YOU LOOK AROUND AND WISH YOU HAD STAYED IN CRYO.",
           "YOU LOOK AROUND AND THINK ABOUT THE WORD 'SURVIVAL'. IT SOUNDS VERY EXPENSIVE.",
           "YOU LOOK AROUND AND REMEMBER THAT THE COMPANY NEVER MENTIONED AN ALIEN.",
-          "YOU LOOK AROUND AND WONDER WHAT ELSE THE COMPANY FORGOT TO MENTION."
+          "YOU LOOK AROUND AND WONDER WHAT ELSE THE COMPANY FORGOT TO MENTION.",
         ];
 
         const randomComment =
           lookComments[
-            Math.floor(
-              Math.random() *
-              lookComments.length
-            )
+          Math.floor(
+            Math.random() *
+            lookComments.length
+          )
           ];
 
         updatedGame.logs.push(
@@ -724,7 +1283,10 @@ export function executeCommand(game, input) {
     }
 
     case "LOCK": {
-      if (!roomA || !roomB) {
+      if (
+        !roomA ||
+        !roomB
+      ) {
         updatedGame.logs.push(
           "LOCK REQUIRES TWO ROOMS."
         );
@@ -760,7 +1322,10 @@ export function executeCommand(game, input) {
       }
 
       const lockKey =
-        getLockKey(roomA, roomB);
+        getLockKey(
+          roomA,
+          roomB
+        );
 
       if (
         isDoorLocked(
@@ -781,7 +1346,8 @@ export function executeCommand(game, input) {
         [lockKey]: 3,
       };
 
-      updatedGame.newLock = lockKey;
+      updatedGame.newLock =
+        lockKey;
 
       updatedGame.logs.push(
         `LOCK ENGAGED: ${rooms[roomA].name} ↔ ${rooms[roomB].name}`,
@@ -792,10 +1358,11 @@ export function executeCommand(game, input) {
     }
 
     case "SOUND": {
-      const targetRoom = parts
-        .slice(1)
-        .join("-")
-        .toLowerCase();
+      const targetRoom =
+        parts
+          .slice(1)
+          .join("-")
+          .toLowerCase();
 
       if (!targetRoom) {
         updatedGame.logs.push(
@@ -814,7 +1381,8 @@ export function executeCommand(game, input) {
       }
 
       if (
-        game.soundDevices.length === 0
+        game.soundDevices.length ===
+        0
       ) {
         updatedGame.logs.push(
           "ALL SOUND DEVICES DAMAGED."
@@ -841,9 +1409,8 @@ export function executeCommand(game, input) {
       );
 
       /*
-       * O SOUND consome um turno,
-       * mas não executa o movimento
-       * aleatório normal depois.
+       * SOUND gasta exatamente um turno,
+       * mas não executa o movimento aleatório.
        */
       updatedGame =
         advanceTurnWithoutAlien(
@@ -851,8 +1418,7 @@ export function executeCommand(game, input) {
         );
 
       /*
-       * O Alien agora segue o caminho
-       * calculado até o dispositivo.
+       * O próprio SOUND movimenta o Alien.
        */
       updatedGame =
         moveAlienToSound(
@@ -863,11 +1429,59 @@ export function executeCommand(game, input) {
       break;
     }
 
-    case "RADAR":
+    case "STEAM": {
+      updatedGame.logs.push(
+        "STEAM SYSTEM ACTIVATED."
+      );
+
+      updatedGame =
+        advanceTurnWithoutAlien(
+          updatedGame
+        );
+
+      if (
+        updatedGame.gameOver ||
+        updatedGame.victory
+      ) {
+        return updatedGame;
+      }
+
+      updatedGame =
+        useSteam(
+          updatedGame
+        );
+
+      break;
+    }
+
+    case "RADAR": {
+      /*
+       * Alien dentro da ventilação não possui
+       * uma posição específica detectável.
+       */
+      if (
+        game.alienState ===
+        "inVent"
+      ) {
+        updatedGame.radarRoom =
+          null;
+
+        updatedGame.radarActive =
+          true;
+
+        updatedGame.logs.push(
+          "RADAR SCAN COMPLETE.",
+          "NO CONTACT DETECTED."
+        );
+
+        break;
+      }
+
       updatedGame.radarRoom =
         game.alienRoom;
 
-      updatedGame.radarActive = true;
+      updatedGame.radarActive =
+        true;
 
       updatedGame.logs.push(
         "RADAR SCAN COMPLETE.",
@@ -875,6 +1489,7 @@ export function executeCommand(game, input) {
       );
 
       break;
+    }
 
     default:
       updatedGame.logs.push(
@@ -887,14 +1502,21 @@ export function executeCommand(game, input) {
   }
 
   /*
-   * SOUND já possui seu próprio avanço
-   * de turno e movimento.
+   * SOUND e STEAM já possuem
+   * seu próprio avanço de turno.
    */
-  if (parts[0] === "SOUND") {
+  if (
+    parts[0] === "SOUND" ||
+    parts[0] === "STEAM"
+  ) {
     return updatedGame;
   }
 
-  // Qualquer outro comando válido
-  // faz o Alien se mover.
-  return advanceTurn(updatedGame);
+  /*
+   * Todos os outros comandos válidos
+   * chegam aqui e avançam o turno.
+   */
+  return advanceTurn(
+    updatedGame
+  );
 }

@@ -7,6 +7,7 @@ import { getLockKey } from "../game/gameEngine";
 import soundDeviceIcon from "../assets/sound-loud-filled-svgrepo-com.svg";
 
 export default function Map({ game, onExit }) {
+
     const roomIds = [
         "bridge",
         "cryo",
@@ -82,7 +83,7 @@ export default function Map({ game, onExit }) {
         };
     }, []);
 
-    /*
+    /**
      * Centraliza o mapa horizontalmente
      * quando a tela é aberta.
      */
@@ -154,7 +155,7 @@ export default function Map({ game, onExit }) {
         let endX = centerB.x;
         let endY = centerB.y;
 
-        /*
+        /**
          * Decide se a conexão é predominantemente
          * horizontal ou vertical.
          */
@@ -196,6 +197,7 @@ export default function Map({ game, onExit }) {
 
     return (
         <section className="map-panel">
+
             <div className="panel-title">
                 SHIP MAP
             </div>
@@ -208,13 +210,17 @@ export default function Map({ game, onExit }) {
             </button>
 
             <div className="map-scroll">
+
                 <div
                     className="ship-map"
                     ref={mapRef}
                 >
+
                     <svg className="map-connections">
+
                         {connections.map(
                             ([roomA, roomB]) => {
+
                                 const points =
                                     getConnectionPoints(
                                         roomA,
@@ -253,6 +259,7 @@ export default function Map({ game, onExit }) {
                                     <g
                                         key={`${roomA}-${roomB}`}
                                     >
+
                                         <line
                                             x1={
                                                 points.startX
@@ -278,6 +285,7 @@ export default function Map({ game, onExit }) {
                                                 className="lock-battery"
                                                 transform={`translate(${centerX}, ${centerY})`}
                                             >
+
                                                 {[0, 1, 2].map(
                                                     (
                                                         index
@@ -303,15 +311,19 @@ export default function Map({ game, onExit }) {
                                                         />
                                                     )
                                                 )}
+
                                             </g>
                                         )}
+
                                     </g>
                                 );
                             }
                         )}
+
                     </svg>
 
                     {roomIds.map((roomId) => {
+
                         const room =
                             rooms[roomId];
 
@@ -319,13 +331,32 @@ export default function Map({ game, onExit }) {
                             game.playerRoom ===
                             roomId;
 
+                        /**
+                         * O Alien só pode aparecer
+                         * no mapa quando está em uma
+                         * sala normal.
+                         *
+                         * Se estiver na ventilação,
+                         * alienRoom é null e nenhum
+                         * contato é mostrado.
+                         */
                         const isRadarAlien =
+                            game.alienState !== "inVent" &&
                             game.radarActive &&
                             game.radarRoom ===
                                 roomId;
 
                         const hasSoundDevice =
                             game.soundDevices?.includes(
+                                roomId
+                            );
+
+                        /**
+                         * Verifica se esta sala
+                         * possui uma entrada de vent.
+                         */
+                        const hasVent =
+                            game.vents?.includes(
                                 roomId
                             );
 
@@ -338,6 +369,7 @@ export default function Map({ game, onExit }) {
                                         : ""
                                 }`}
                             >
+
                                 <span className="room-name">
                                     {room.name}
                                 </span>
@@ -352,6 +384,15 @@ export default function Map({ game, onExit }) {
                                     />
                                 )}
 
+                                {hasVent && (
+                                    <span
+                                        className="vent-icon"
+                                        title="Ventilation access"
+                                    >
+                                        V
+                                    </span>
+                                )}
+
                                 {isRadarAlien && (
                                     <span
                                         className="alien-marker"
@@ -360,13 +401,17 @@ export default function Map({ game, onExit }) {
                                         ●
                                     </span>
                                 )}
+
                             </div>
                         );
                     })}
+
                 </div>
+
             </div>
 
             <div className="map-legend">
+
                 <span>
                     <i className="legend-player" />
                     YOUR LOCATION
@@ -394,7 +439,16 @@ export default function Map({ game, onExit }) {
                     />
                     SOUND DEVICE
                 </span>
+
+                <span>
+                    <i className="legend-vent">
+                        V
+                    </i>
+                    VENT
+                </span>
+
             </div>
+
         </section>
     );
 }

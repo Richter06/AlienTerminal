@@ -1,66 +1,66 @@
 # ALIEN TERMINAL
 
-A retro-futuristic survival game played entirely through a shipboard computer terminal. Built with React and Vite, the project combines a command-driven interface, a schematic ship map and a turn-based simulation where an unidentified lifeform moves independently of the player.
+Um jogo de sobrevivência em terminal inspirado em interfaces de computador retrofuturistas e no universo de ficção científica de *Alien*. Desenvolvido com React e Vite, o projeto combina uma interface comandada por texto, um mapa esquemático da nave e uma simulação baseada em turnos, na qual uma forma de vida desconhecida se movimenta de forma independente do jogador.
 
-> **Objective:** survive 30 turns.
+> **Objetivo:** sobreviver por 30 turnos.
 
-## Technical Sheet
+## Ficha Técnica
 
-| Category | Details |
+| Categoria | Detalhes |
 |---|---|
-| **Project type** | Browser survival / strategy game |
+| **Tipo de projeto** | Jogo de sobrevivência / estratégia para navegador |
 | **Frontend** | React 19 |
-| **Build tool** | Vite 8 |
-| **Language** | JavaScript (ES Modules) |
-| **Styling** | CSS |
-| **State management** | React `useState` / `useEffect` |
-| **Game engine** | Custom JavaScript simulation |
-| **Rendering** | React components + SVG map connections |
-| **Input** | Terminal command interface |
-| **Responsive UI** | Desktop and mobile layouts |
-| **Backend** | None |
-| **Data persistence** | None — each session is generated in memory |
-| **Maximum survival objective** | 30 turns |
-| **Deployment** | Cloudflare Workers |
+| **Build** | Vite 8 |
+| **Linguagem** | JavaScript (ES Modules) |
+| **Estilização** | CSS |
+| **Gerenciamento de estado** | React `useState` / `useEffect` |
+| **Engine do jogo** | Simulação customizada em JavaScript |
+| **Renderização** | Componentes React + conexões SVG no mapa |
+| **Entrada do jogador** | Interface de comandos em terminal |
+| **Interface responsiva** | Desktop e dispositivos móveis |
+| **Backend** | Não possui |
+| **Persistência de dados** | Não possui — cada sessão é gerada em memória |
+| **Objetivo de sobrevivência** | 30 turnos |
+| **Deploy** | Cloudflare Workers |
 
-## Concept
+## Conceito
 
-The player wakes aboard a USCSS vessel after cryogenic revival. The crew is dead, an unidentified lifeform is loose on the ship, and an automatic distress signal has already been sent.
+O jogador está a bordo de uma nave USCSS após o despertar do sono criogênico. A tripulação está morta, uma forma de vida desconhecida circula pela nave e um sinal automático de emergência já foi enviado.
 
-The player cannot directly control the character or move through the ship. Instead, every decision is made through the terminal.
+O jogador não controla diretamente um personagem nem percorre fisicamente a nave. Todas as decisões são tomadas através do terminal de bordo.
 
-The game is built around **information, prediction and resource management**:
+A experiência é construída em torno de **informação, previsão e gerenciamento de recursos**:
 
-- Scan the lifeform with RADAR.
-- Track possible movement using the ship map.
-- Temporarily lock connections between rooms.
-- Use SOUND devices to redirect the lifeform.
-- Monitor ventilation access and the hidden vent network.
-- Use STEAM to attempt to force a hidden lifeform out of the vents.
-- Manage turns carefully until rescue can arrive.
+- Rastrear a forma de vida através do RADAR.
+- Usar o mapa para analisar possíveis rotas.
+- Bloquear temporariamente conexões entre salas.
+- Utilizar dispositivos de som para redirecionar a criatura.
+- Monitorar acessos à ventilação e a rede de dutos.
+- Usar STEAM para tentar expulsar a criatura dos dutos.
+- Administrar os turnos cuidadosamente até completar a missão.
 
-## Core Gameplay
+## Jogabilidade
 
-### Turn-based simulation
+### Sistema de turnos
 
-The game uses a discrete turn system.
+O jogo utiliza um sistema de turnos discretos.
 
-- The session starts at turn 1.
-- The objective is to survive until turn 30.
-- Most valid operational commands consume one turn.
-- Invalid commands do not consume a turn.
-- `HELP` does not consume a turn.
-- `MAP` does not consume a turn.
-- After normal valid commands, the lifeform receives a movement opportunity.
-- Reaching the survival limit triggers mission completion.
+- A sessão começa no turno 1.
+- O objetivo é sobreviver até o turno 30.
+- A maioria dos comandos operacionais válidos consome um turno.
+- Comandos inválidos não consomem turno.
+- `HELP` não consome turno.
+- `MAP` não consome turno.
+- Após um comando operacional válido, a forma de vida normalmente recebe uma oportunidade de movimento.
+- Ao atingir o limite de sobrevivência, a missão é concluída.
 
-The player therefore has to consider not only **what** command to execute, but also **when** to execute it.
+Isso faz com que o jogador precise considerar não apenas **qual** comando utilizar, mas também **quando** utilizá-lo.
 
-### Ship map
+### Mapa da nave
 
-The ship is represented as a connected room graph.
+A nave é representada como um grafo de salas conectadas.
 
-Current rooms:
+Salas atuais:
 
 - BRIDGE
 - CRYO
@@ -74,194 +74,195 @@ Current rooms:
 - MACHINE SHOP
 - LANDING BAY
 
-Connections are defined in `src/game/rooms.js`. The map component builds the visual connection network from the same room data used by the game engine, keeping the visual topology synchronized with the simulation.
+As conexões são definidas em `src/game/rooms.js`. O componente do mapa utiliza a mesma estrutura de salas usada pela engine, mantendo a representação visual sincronizada com a topologia da simulação.
 
-The map can display:
+O mapa pode exibir:
 
-- Player location
-- Last known RADAR contact
-- Active door locks
-- Lock battery indicators
-- Sound devices
-- Ventilation access points
+- Localização do jogador
+- Último contato conhecido pelo RADAR
+- Conexões bloqueadas
+- Bateria dos bloqueios
+- Dispositivos de som
+- Pontos de acesso à ventilação
 
-The map is an informational interface and does not advance the game turn.
+Abrir o mapa é uma ação informativa e não avança o turno.
 
-## Lifeform AI / Movement
+## IA e Movimento da Forma de Vida
 
-The lifeform is simulated entirely on the client through the custom game engine.
+A forma de vida é simulada inteiramente no cliente através da engine customizada do jogo.
 
-### Normal movement
+### Movimento normal
 
-During normal movement, the lifeform:
+Durante o movimento normal, a forma de vida:
 
-- Can move through connected rooms.
-- Moves at most one room per movement opportunity.
-- May remain in its current room.
-- Respects active door locks.
-- Can enter the ventilation system depending on the current room and its exits.
+- Pode atravessar salas conectadas.
+- Move-se no máximo uma sala por oportunidade de movimento.
+- Pode permanecer na sala atual.
+- Respeita conexões bloqueadas.
+- Pode entrar no sistema de ventilação dependendo da sala e de suas saídas.
 
-The player does **not** receive continuous tracking. RADAR represents the most recent known contact, not a guaranteed current position.
+O jogador **não recebe rastreamento contínuo**. O RADAR representa o último contato conhecido, e não necessariamente a localização atual.
 
-### Locked connections
+### Conexões bloqueadas
 
-The lifeform does not automatically choose another route when it encounters a locked connection during normal movement.
+Durante o movimento normal, a forma de vida não escolhe automaticamente outra rota caso selecione uma conexão bloqueada.
 
-If it selects a locked connection:
+Quando isso acontece:
 
-1. The terminal reports motion.
-2. The lifeform attempts to break the door.
-3. The connection remains blocking the movement.
-4. The lifeform stays in its current room for that movement opportunity.
+1. O terminal registra a movimentação.
+2. A criatura tenta atravessar a porta.
+3. A conexão permanece bloqueada.
+4. A criatura permanece na sala atual naquela oportunidade de movimento.
 
-This makes temporary locks useful for manipulating movement without completely controlling the lifeform.
+Isso permite utilizar os bloqueios para manipular temporariamente o deslocamento da ameaça sem controlá-la completamente.
 
-## Door Lock System
+## Sistema de Bloqueio de Portas
 
-Locks are created with:
+Os bloqueios são criados através do comando:
 
-`LOCK [ROOM] [ROOM]`
+`LOCK [SALA] [SALA]`
 
-Example:
-
-`LOCK CARGO AIRLOCK`
-
-Only directly connected rooms can be locked.
-
-Each lock:
-
-- Starts with 3 battery units.
-- Keeps 3 battery units during its creation turn.
-- Loses battery on subsequent turns.
-- Expires when its battery reaches zero.
-- Is tracked independently from other locks.
-
-The engine uses a normalized room-pair key so the same connection is represented consistently regardless of command order.
-
-Example:
+Exemplo:
 
 `LOCK CARGO AIRLOCK`
 
-and
+Somente conexões diretamente adjacentes podem ser bloqueadas.
+
+Cada bloqueio:
+
+- Começa com 3 unidades de bateria.
+- Mantém 3 unidades durante o turno em que foi criado.
+- Perde bateria nos turnos seguintes.
+- Expira quando a bateria chega a zero.
+- É controlado independentemente dos outros bloqueios.
+
+A engine utiliza uma chave normalizada para representar o par de salas, garantindo que a mesma conexão seja identificada corretamente independentemente da ordem utilizada no comando.
+
+Por exemplo:
+
+`LOCK CARGO AIRLOCK`
+
+e
 
 `LOCK AIRLOCK CARGO`
 
-refer to the same physical connection.
+representam a mesma conexão física.
 
 ## RADAR
 
-RADAR is a deliberate **last-known-position system**, rather than continuous tracking.
+O RADAR funciona como um sistema de **última localização conhecida**, e não como rastreamento contínuo.
 
-When a scan succeeds:
+Quando uma varredura encontra a forma de vida:
 
-- The most recent lifeform position is recorded.
-- The position is displayed on the map.
-- The lifeform can move after the scan.
-- The player must use the map topology to reason about possible movement.
+- A posição mais recente é registrada.
+- O contato é exibido no mapa.
+- A criatura pode se mover depois da varredura.
+- O jogador precisa utilizar a topologia do mapa para analisar para onde ela pode ter ido.
 
-If the lifeform enters the ventilation network:
+Quando a criatura entra na ventilação:
 
 `NO CONTACT DETECTED.`
 
-The lack of a radar contact does not mean the lifeform has disappeared.
+A perda do contato não significa que a criatura desapareceu.
 
-## Ventilation System
+## Sistema de Ventilação
 
-Between 1 and 3 ventilation access points are generated randomly at the beginning of each session.
+Entre 1 e 3 pontos de acesso à ventilação são gerados aleatoriamente no início de cada sessão.
 
-All vents belong to a **single shared ventilation network**.
+Todos os pontos fazem parte de uma **única rede de ventilação compartilhada**.
 
-### Vent entry
+### Entrada na ventilação
 
-When the lifeform enters a room containing a vent:
+Quando a forma de vida entra em uma sala com acesso à ventilação:
 
-- **40% chance** to enter ventilation if at least one exit is unlocked.
-- **80% chance** to enter ventilation if every exit is locked.
+- **40% de chance** de entrar nos dutos quando pelo menos uma saída está desbloqueada.
+- **80% de chance** quando todas as saídas estão bloqueadas.
 
-This creates an important trade-off: completely blocking a room can make ventilation more attractive to the lifeform.
+Isso cria uma relação de risco entre os sistemas: bloquear completamente uma sala pode aumentar a probabilidade de a criatura utilizar a ventilação.
 
-### Hidden state
+### Estado oculto
 
-While inside ventilation:
+Enquanto estiver na ventilação:
 
-- The lifeform has no room position.
-- `alienRoom` becomes `null`.
-- RADAR cannot detect it.
-- Normal room-to-room movement is suspended.
+- A criatura não possui uma sala atual.
+- `alienRoom` passa a ser `null`.
+- O RADAR não consegue detectá-la.
+- O movimento normal entre salas é suspenso.
 
-At each hidden movement opportunity:
+A cada oportunidade de movimento enquanto estiver escondida:
 
-- **75% chance** to remain in the vents.
-- **25% chance** to exit through a randomly selected vent room.
+- **75% de chance** de permanecer na ventilação.
+- **25% de chance** de sair por um ponto de ventilação escolhido aleatoriamente.
 
-The exit room does not have to be the same room where the lifeform entered.
+A sala de saída não precisa ser a mesma sala pela qual a criatura entrou.
 
-### Steam
+### STEAM
 
-The `STEAM` command attempts to force a hidden lifeform out of ventilation.
+O comando `STEAM` tenta forçar uma criatura escondida a sair da ventilação.
 
-- Consumes one turn.
-- Has a **30% success chance**.
-- On success, the lifeform exits through a randomly selected vent room.
-- The terminal confirms that steam was activated, but does not reveal whether it succeeded.
-- RADAR can be used afterward to regain information.
+- Consome um turno.
+- Possui **30% de chance de sucesso**.
+- Em caso de sucesso, a criatura sai por um ponto de ventilação aleatório.
+- O terminal confirma apenas que o sistema foi ativado.
+- O jogador não recebe confirmação sobre o sucesso da tentativa.
+- O RADAR pode ser utilizado depois para tentar recuperar informações.
 
-## Sound Devices
+## Dispositivos de Som
 
-Each session generates **1 to 5 sound devices** in unique rooms.
+Cada sessão gera entre **1 e 5 dispositivos de som** em salas diferentes.
 
-Command:
+Comando:
 
-`SOUND [ROOM]`
+`SOUND [SALA]`
 
-Example:
+Exemplo:
 
 `SOUND CARGO`
 
-When a valid device is activated:
+Quando um dispositivo válido é ativado:
 
-1. The command consumes one turn.
-2. Normal random movement is skipped for that turn.
-3. The lifeform pursues the sound source.
-4. A route is calculated toward the target.
-5. Locked connections do not provide normal protection during sound pursuit.
-6. The lifeform can break through locked connections when necessary.
-7. The player is not automatically attacked if the pursuit path passes through their room.
-8. When the target is reached, the device is destroyed.
+1. O comando consome um turno.
+2. O movimento aleatório normal é substituído naquela oportunidade.
+3. A criatura passa a perseguir a fonte sonora.
+4. A engine calcula uma rota até o dispositivo.
+5. Bloqueios não oferecem a mesma proteção durante a perseguição sonora.
+6. A criatura pode atravessar conexões bloqueadas quando necessário.
+7. Se a rota passar pela sala do jogador, a criatura não o ataca automaticamente durante essa perseguição.
+8. Ao alcançar o dispositivo, ele é destruído.
 
-Sound devices therefore act as a limited resource for deliberately redirecting the threat.
+Os dispositivos de som funcionam, portanto, como um recurso limitado para manipular deliberadamente a posição da ameaça.
 
-The map displays active sound devices, and destroyed devices disappear from the available pool.
+O mapa mostra os dispositivos ativos e remove os dispositivos destruídos.
 
 ## Pathfinding
 
-The game engine includes a custom pathfinding routine used for sound pursuit.
+A engine possui uma rotina própria de busca de caminhos utilizada durante a perseguição sonora.
 
-Route selection prioritizes:
+A escolha de rota prioriza:
 
-1. Fewer locked connections.
-2. Shorter distance.
+1. Menor quantidade de conexões bloqueadas.
+2. Menor distância.
 
-The result includes both the selected path and the locked connections that would need to be crossed.
+O resultado do cálculo inclui tanto o caminho selecionado quanto as conexões bloqueadas que precisarão ser atravessadas.
 
-This separates **normal movement AI** from **directed sound pursuit**, allowing the two states to behave differently.
+Isso mantém separados os comportamentos de **movimento normal** e **perseguição direcionada por som**.
 
-## Commands
+## Comandos
 
-| Command | Purpose | Consumes turn |
+| Comando | Função | Consome turno |
 |---|---|---:|
-| `HELP` | Displays available commands | No |
-| `STATUS` | Shows turn, location, sound devices and active locks | Yes |
-| `LOOK` | Inspects the current room and exits | Yes |
-| `RADAR` | Scans for the lifeform's last known position | Yes |
-| `MAP` | Opens the ship schematic | No |
-| `LOCK [ROOM] [ROOM]` | Locks an adjacent connection | Yes |
-| `SOUND [ROOM]` | Activates a sound device | Yes |
-| `STEAM` | Attempts to force a hidden lifeform from ventilation | Yes |
+| `HELP` | Exibe os comandos disponíveis | Não |
+| `STATUS` | Mostra turno, localização, dispositivos de som e bloqueios ativos | Sim |
+| `LOOK` | Inspeciona a sala atual e suas saídas | Sim |
+| `RADAR` | Procura o último contato conhecido da criatura | Sim |
+| `MAP` | Abre o mapa esquemático da nave | Não |
+| `LOCK [SALA] [SALA]` | Bloqueia uma conexão adjacente | Sim |
+| `SOUND [SALA]` | Ativa um dispositivo de som | Sim |
+| `STEAM` | Tenta expulsar a criatura da ventilação | Sim |
 
-## Game States
+## Estado do Jogo
 
-The engine keeps the session state in a single game object containing:
+A engine mantém o estado da sessão em um único objeto contendo informações como:
 
 - `playerRoom`
 - `alienRoom`
@@ -279,16 +280,16 @@ The engine keeps the session state in a single game object containing:
 - `victory`
 - `logs`
 
-The lifeform currently has two explicit movement states:
+A forma de vida possui atualmente dois estados de movimentação explícitos:
 
 - `normal`
 - `inVent`
 
-This state-based approach keeps the simulation logic separate from the presentation layer.
+Essa separação mantém a lógica da simulação independente da camada de apresentação.
 
-## Application Architecture
+## Arquitetura da Aplicação
 
-The project follows a small component-based React structure:
+O projeto utiliza uma arquitetura baseada em componentes React:
 
 ```text
 alien-terminal/
@@ -324,151 +325,154 @@ alien-terminal/
 └── eslint.config.js
 ```
 
-### Component responsibilities
+### Responsabilidades dos componentes
 
 **App.jsx**
 
-Controls the main application flow:
+Controla o fluxo principal da aplicação:
 
 - Menu
-- Loading screen
-- Game screen
-- Terminal/map view switching
-- Tutorial modal
-- Game-over sequence
-- Session restart
+- Tela de carregamento
+- Tela do jogo
+- Alternância entre terminal e mapa
+- Modal do tutorial
+- Sequência de game over
+- Reinício da sessão
 
 **Terminal.jsx**
 
-Provides the command-line interface:
+Implementa a interface de comandos:
 
-- Command input
-- Command submission
-- Terminal log rendering
-- Custom text cursor
-- Automatic output scrolling
-- MAP access
+- Entrada de comandos
+- Envio dos comandos
+- Exibição dos logs
+- Cursor de texto personalizado
+- Rolagem automática do terminal
+- Acesso ao mapa
 
 **Map.jsx**
 
-Renders the ship schematic using React and SVG:
+Renderiza o esquema da nave utilizando React e SVG:
 
-- Room nodes
-- Physical connections
-- Player marker
-- RADAR marker
-- Lock indicators
-- Battery indicators
-- Sound devices
-- Vent markers
+- Salas
+- Conexões físicas
+- Marcador do jogador
+- Marcador do RADAR
+- Indicadores de bloqueio
+- Indicadores de bateria
+- Dispositivos de som
+- Pontos de ventilação
 
 **StatusBar.jsx**
 
-Displays:
+Exibe informações de estado como:
 
-- Current location
-- Current turn
-- Game status
+- Localização atual
+- Turno
+- Status da sessão
 
 **Menu.jsx**
 
-Provides:
+Disponibiliza:
 
-- New Game
+- Novo jogo
 - Tutorial
 
 **LoadingScreen.jsx**
 
-Simulates shipboard system initialization with a progress sequence before starting a session.
+Simula a inicialização dos sistemas da nave antes do início da sessão.
 
 **TutorialModal.jsx**
 
-Contains the in-game operations manual explaining the game's mechanics and command system.
+Contém o manual operacional dentro do jogo, explicando as mecânicas e os comandos.
 
 **gameEngine.js**
 
-Contains the core simulation logic:
+Concentra a lógica principal da simulação:
 
-- Game initialization
-- Random placement
-- Lifeform movement
+- Criação da sessão
+- Posicionamento aleatório
+- Movimento da criatura
 - Pathfinding
-- Door locks
+- Bloqueios
 - RADAR
-- Sound pursuit
-- Ventilation
-- Steam
-- Turn progression
-- Victory and game-over conditions
-- Terminal command parsing
+- Perseguição sonora
+- Ventilação
+- STEAM
+- Progressão de turnos
+- Vitória e game over
+- Interpretação dos comandos
 
 **rooms.js**
 
-Defines the ship topology and available room connections.
+Define a topologia da nave e as conexões entre as salas.
 
-## Randomization
+## Randomização
 
-Every new session generates a different initial state.
+Cada nova sessão gera um estado inicial diferente.
 
-Randomized elements include:
+Elementos randomizados:
 
-- Player starting room
-- Lifeform starting room
-- Sound device locations
-- Ventilation locations
+- Sala inicial do jogador
+- Sala inicial da criatura
+- Localização dos dispositivos de som
+- Localização dos pontos de ventilação
 
-The engine also uses random decisions during the simulation for:
+A engine também utiliza decisões aleatórias durante a partida para:
 
-- Lifeform movement
-- Vent entry
-- Vent persistence
-- Vent exits
-- Steam success
-- Atmospheric/system events
+- Movimento da criatura
+- Entrada na ventilação
+- Permanência nos dutos
+- Saída da ventilação
+- Sucesso do STEAM
+- Eventos atmosféricos e de sistema
 
-This prevents a fixed optimal sequence from being reused between sessions.
+Isso impede que uma única sequência fixa de ações seja reutilizada em todas as partidas.
 
-## Interface Design
+## Design da Interface
 
-The visual interface intentionally combines:
+A interface foi projetada para reproduzir a sensação de um computador de bordo industrial e retrofuturista.
 
-- CRT-inspired presentation
-- Monospaced typography
-- Green monochrome terminal palette
-- Scanlines and screen effects
-- Industrial computer-console styling
-- Minimal HUD elements
-- Schematic ship visualization
+Principais características:
 
-The UI is designed to feel like a functional shipboard computer rather than a conventional game menu.
+- Visual inspirado em CRT
+- Tipografia monoespaçada
+- Paleta monocromática verde
+- Scanlines e efeitos de tela
+- Estética de terminal industrial
+- HUD minimalista
+- Mapa esquemático da nave
+- Interface responsiva
 
-The game also includes responsive layouts for smaller screens.
+A proposta é fazer o terminal parecer um sistema funcional da própria nave, em vez de uma interface convencional de videogame.
 
-## Project Goals
+O layout também possui adaptações para telas menores.
 
-This project was built as a practical exercise in:
+## Objetivos Técnicos
 
-- React component architecture
-- State-driven UI
-- JavaScript game logic
-- Graph-based movement systems
+O projeto foi desenvolvido como exercício prático de:
+
+- Arquitetura de componentes React
+- Interfaces orientadas por estado
+- Lógica de jogos em JavaScript
+- Sistemas de movimentação baseados em grafos
 - Pathfinding
-- Randomized simulations
-- Command parsing
-- Conditional rendering
-- SVG-based interfaces
-- Responsive CSS
-- UI/UX design
-- Separating game logic from presentation
+- Simulações com aleatoriedade
+- Interpretação de comandos
+- Renderização condicional
+- Interfaces baseadas em SVG
+- CSS responsivo
+- UI/UX
+- Separação entre lógica do jogo e apresentação
 
-## Running Locally
+## Executando Localmente
 
-### Requirements
+### Requisitos
 
 - Node.js
 - npm
 
-### Installation
+### Instalação
 
 ```bash
 git clone https://github.com/Richter06/AlienTerminal.git
@@ -476,19 +480,19 @@ cd AlienTerminal/alien-terminal
 npm install
 ```
 
-### Development
+### Desenvolvimento
 
 ```bash
 npm run dev
 ```
 
-### Production build
+### Build de produção
 
 ```bash
 npm run build
 ```
 
-### Preview production build
+### Visualização do build
 
 ```bash
 npm run preview
@@ -500,14 +504,14 @@ npm run preview
 npm run lint
 ```
 
-## Dependencies
+## Dependências
 
 ### Runtime
 
 - React
 - React DOM
 
-### Development
+### Desenvolvimento
 
 - Vite
 - @vitejs/plugin-react
@@ -515,29 +519,29 @@ npm run lint
 - eslint-plugin-react-hooks
 - eslint-plugin-react-refresh
 
-No game backend or external database is required.
+O jogo não depende de backend ou banco de dados externo.
 
-## Deployment
+## Deploy
 
-The project is configured as a client-side React application and is deployed through Cloudflare Workers.
+O projeto é uma aplicação React executada no lado do cliente e configurada para deploy através da infraestrutura da Cloudflare.
 
-The Vite production build generates the static application that is served to the browser.
+O build de produção do Vite gera os arquivos estáticos que são disponibilizados ao navegador.
 
-## Current Scope
+## Escopo Atual
 
-The current version focuses on the terminal survival loop:
+A versão atual é centrada no ciclo principal de sobrevivência:
 
-**Observe → Decide → Execute command → Advance turn → React to the lifeform → Survive**
+**Observar → Decidir → Executar comando → Avançar turno → Reagir à criatura → Sobreviver**
 
-The architecture is intentionally separated so new systems can be added to the simulation without having to rebuild the terminal or map interface.
+A arquitetura foi organizada de forma que novos sistemas possam ser adicionados à simulação sem a necessidade de reconstruir a interface do terminal ou o mapa.
 
-## Author
+## Autor
 
 **Richard R. Araújo**
 
 - GitHub: https://github.com/Richter06
-- Repository: https://github.com/Richter06/AlienTerminal
+- Repositório: https://github.com/Richter06/AlienTerminal
 
 ---
 
-*Built as an independent front-end/game development project.*
+*Projeto independente de desenvolvimento web e jogos.*
